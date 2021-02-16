@@ -1,8 +1,8 @@
 import warnings
 
-from smqtk.representation import DataSet
-from smqtk.representation.data_element.psql import PostgresDataElement
-from smqtk.utils.postgres import PsqlConnectionHelper
+from smqtk_dataprovider import DataSet
+from smqtk_dataprovider.impls.data_element.psql import PostgresDataElement
+from smqtk_dataprovider.utils.postgres import PsqlConnectionHelper
 
 # Try to import required modules
 try:

@@ -17,13 +17,15 @@ using the recommended systemctl-based commands.  Instead, pg_ctlcluster should
 be used to start/stop the database.
 
 """
+import logging
 import hashlib
 from threading import RLock
 
-import six
-
-from smqtk.representation import DataElement
-from smqtk.utils.postgres import norm_psql_cmd_string, PsqlConnectionHelper
+from smqtk_dataprovider import DataElement
+from smqtk_dataprovider.utils.postgres import (
+    norm_psql_cmd_string,
+    PsqlConnectionHelper,
+)
 
 # Try to import required modules
 try:
@@ -31,6 +33,8 @@ try:
 except ImportError:
     psycopg2 = None
 
+
+LOG = logging.getLogger(__name__)
 
 # Lock for data element create-table functionality
 GLOBAL_PSQL_TABLE_CREATE_RLOCK = RLock()
@@ -137,8 +141,7 @@ class PostgresDataElement (DataElement):  # lgtm [py/missing-equals]
     @classmethod
     def is_usable(cls):
         if psycopg2 is None:
-            cls.get_logger().warning("Not usable. "
-                                     "Requires the psycopg2 module.")
+            LOG.warning("Not usable. Requires the psycopg2 module.")
             return False
         return True
 
@@ -229,7 +232,7 @@ class PostgresDataElement (DataElement):  # lgtm [py/missing-equals]
         """
         super(PostgresDataElement, self).__init__()
 
-        if not isinstance(element_id, six.string_types):
+        if not isinstance(element_id, str):
             raise ValueError("Element ID should be a string type.")
 
         self._element_id = element_id

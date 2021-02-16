@@ -1,16 +1,12 @@
-from __future__ import division, print_function
-
 import pickle
 import unittest
 
-import six
-
-from smqtk.exceptions import ReadOnlyError
-from smqtk.representation.data_element.memory_element import (
+from smqtk_dataprovider.exceptions import ReadOnlyError
+from smqtk_dataprovider.impls.data_element.memory import (
     BYTES_CONFIG_ENCODING,
     DataMemoryElement,
 )
-from smqtk.representation.data_set.memory_set import DataMemorySet
+from smqtk_dataprovider.impls.data_set.memory import DataMemorySet
 
 
 class TestDataFileSet (unittest.TestCase):
@@ -23,8 +19,7 @@ class TestDataFileSet (unittest.TestCase):
         default_config = DataMemorySet.get_default_config()
         self.assertEqual(len(default_config), 2)
         self.assertIn('cache_element', default_config)
-        self.assertIsInstance(default_config['cache_element'],
-                              dict)
+        self.assertIsInstance(default_config['cache_element'], dict)
         self.assertIsNone(default_config['cache_element']['type'])
         self.assertIn('pickle_protocol', default_config)
 
@@ -40,11 +35,11 @@ class TestDataFileSet (unittest.TestCase):
     def test_from_config_empty_cache(self):
         # Specify a memory element cache with no pre-existing bytes.
         c = DataMemorySet.get_default_config()
-        c['cache_element']['type'] = 'smqtk.representation.data_element.memory_element.DataMemoryElement'
+        c['cache_element']['type'] = 'smqtk_dataprovider.impls.data_element.memory.DataMemoryElement'
         i = DataMemorySet.from_config(c)
         self.assertIsNotNone(i.cache_element)
         self.assertIsInstance(i.cache_element, DataMemoryElement)
-        self.assertEqual(i.cache_element.get_bytes(), six.b(''))
+        self.assertEqual(i.cache_element.get_bytes(), b"")
         self.assertEqual(i.pickle_protocol, -1)
         self.assertEqual(i._element_map, {})
 
@@ -52,7 +47,7 @@ class TestDataFileSet (unittest.TestCase):
         # Use a cache element with content defining pickle of map to use.
         expected_map = dict(a=1, b=2, c=3)
 
-        dme_key = 'smqtk.representation.data_element.memory_element.DataMemoryElement'
+        dme_key = 'smqtk_dataprovider.impls.data_element.memory.DataMemoryElement'
         c = DataMemorySet.get_default_config()
         c['cache_element']['type'] = dme_key
         c['cache_element'][dme_key]['bytes'] = \
@@ -144,7 +139,7 @@ class TestDataFileSet (unittest.TestCase):
             default_c
         )
 
-        dme_key = 'smqtk.representation.data_element.memory_element.DataMemoryElement'
+        dme_key = 'smqtk_dataprovider.impls.data_element.memory.DataMemoryElement'
         c = DataMemorySet.get_default_config()
         c['cache_element']['type'] = dme_key
         c['cache_element'][dme_key]['readonly'] = True
@@ -197,7 +192,7 @@ class TestDataFileSet (unittest.TestCase):
         )
 
     def test_add_data(self):
-        de = DataMemoryElement(six.b('some bytes'), 'text/plain', True)
+        de = DataMemoryElement(b"some bytes", 'text/plain', True)
         expected_map = {de.uuid(): de}
 
         dms = DataMemorySet()

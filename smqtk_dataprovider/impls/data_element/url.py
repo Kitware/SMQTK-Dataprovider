@@ -1,9 +1,10 @@
 import mimetypes
 import re
+
 import requests
 
-from smqtk.exceptions import InvalidUriError, ReadOnlyError
-from smqtk.representation import DataElement
+from smqtk_dataprovider import DataElement
+from smqtk_dataprovider.exceptions import InvalidUriError, ReadOnlyError
 
 
 MIMETYPES = mimetypes.MimeTypes()

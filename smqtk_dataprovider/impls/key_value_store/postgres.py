@@ -3,8 +3,9 @@ import multiprocessing
 import pickle
 from typing import Hashable, Set
 
-from smqtk.representation.key_value import KeyValueStore, NO_DEFAULT_VALUE
-from smqtk.utils.postgres import norm_psql_cmd_string, PsqlConnectionHelper
+from smqtk_dataprovider import KeyValueStore
+from smqtk_dataprovider.interfaces.key_value_store import NO_DEFAULT_VALUE
+from smqtk_dataprovider.utils.postgres import norm_psql_cmd_string, PsqlConnectionHelper
 
 try:
     import psycopg2  # type: ignore

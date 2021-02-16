@@ -2,17 +2,16 @@
 Data abstraction interface for general key-value storage.
 """
 import abc
-import collections  # noqa: F401
+from typing import Hashable  # noqa: F401
 
-from smqtk.exceptions import ReadOnlyError
-from smqtk.representation import SmqtkRepresentation
-from smqtk.utils.plugin import Pluggable
+from smqtk_dataprovider.exceptions import ReadOnlyError
+from smqtk_core import Configurable, Pluggable
 
 
 NO_DEFAULT_VALUE = type("KeyValueStoreNoDefaultValueType", (object,), {})()
 
 
-class KeyValueStore (SmqtkRepresentation, Pluggable):
+class KeyValueStore (Configurable, Pluggable):
     """
     Interface for general key/value storage.
 
@@ -61,7 +60,7 @@ class KeyValueStore (SmqtkRepresentation, Pluggable):
     def keys(self):
         """
         :return: Iterator over keys in this store.
-        :rtype: collections.abc.Iterator[collections.abc.Hashable]
+        :rtype: collections.abc.Iterator[Hashable]
         """
 
     def values(self):
@@ -86,7 +85,7 @@ class KeyValueStore (SmqtkRepresentation, Pluggable):
         Check if this store has a value for the given key.
 
         :param key: Key to check for a value for.
-        :type key: collections.abc.Hashable
+        :type key: Hashable
 
         :return: If this store has a value for the given key.
         :rtype: bool
@@ -103,7 +102,7 @@ class KeyValueStore (SmqtkRepresentation, Pluggable):
         safety unless ``is_read_only`` is not thread-safe.**
 
         :param key: Key for the value. Must be hashable.
-        :type key: collections.abc.Hashable
+        :type key: Hashable
 
         :param value: Python object to store.
         :type value: object
@@ -124,7 +123,7 @@ class KeyValueStore (SmqtkRepresentation, Pluggable):
         in the provided dictionary `d`.
 
         :param d: Dictionary of key-value pairs to add to this store.
-        :type d: dict[collections.abc.Hashable, object]
+        :type d: dict[Hashable, object]
 
         :raises ReadOnlyError: If this instance is marked as read-only.
 
@@ -142,7 +141,7 @@ class KeyValueStore (SmqtkRepresentation, Pluggable):
         Remove a single key-value entry.
 
         :param key: Key to remove.
-        :type key: collections.abc.Hashable
+        :type key: Hashable
 
         :raises ReadOnlyError: If this instance is marked as read-only.
         :raises KeyError: The given key is not present in this store and no
@@ -163,7 +162,7 @@ class KeyValueStore (SmqtkRepresentation, Pluggable):
 
         :param keys: Iterable of keys to remove.  If this is empty this method
             does nothing.
-        :type keys: collections.abc.Iterable[collections.abc.Hashable]
+        :type keys: collections.abc.Iterable[Hashable]
 
         :raises ReadOnlyError: If this instance is marked as read-only.
         :raises KeyError: The given key is not present in this store and no
@@ -187,7 +186,7 @@ class KeyValueStore (SmqtkRepresentation, Pluggable):
         ``KeyError`` where appropriate.**
 
         :param key: Key to get the value of.
-        :type key: collections.abc.Hashable
+        :type key: Hashable
 
         :param default: Optional default value if the given key is not present
             in this store. This may be any value except for the
@@ -210,7 +209,7 @@ class KeyValueStore (SmqtkRepresentation, Pluggable):
         ``KeyError`` where appropriate.**
 
         :param keys: The keys for which associated values are requested.
-        :type keys: collections.abc.Iterable[collections.abc.Hashable]
+        :type keys: collections.abc.Iterable[Hashable]
 
         :param default: Optional default value if a given key is not present
             in this store. This may be any value except for the

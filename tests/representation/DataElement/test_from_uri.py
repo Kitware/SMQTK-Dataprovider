@@ -4,12 +4,11 @@ Tests for high level ``from_uri`` function, separate from the
 """
 import unittest
 
-import smqtk.exceptions
-import smqtk.representation.data_element
+from smqtk_dataprovider import DataElement, from_uri
+from smqtk_dataprovider.exceptions import InvalidUriError
 
 
-# noinspection PyClassHasNoInit
-class UnresolvableElement (smqtk.representation.data_element.DataElement):
+class UnresolvableElement (DataElement):
     """ Does not implement from_uri, declaring no support for URI resolution """
 
     @classmethod
@@ -38,8 +37,7 @@ class UnresolvableElement (smqtk.representation.data_element.DataElement):
         pass
 
 
-# noinspection PyClassHasNoInit
-class ResolvableElement (smqtk.representation.data_element.DataElement):
+class ResolvableElement (DataElement):
 
     @classmethod
     def from_uri(cls, uri):
@@ -83,8 +81,8 @@ class TestDataElementHighLevelFromUri (unittest.TestCase):
             return {}
 
         self.assertRaises(
-            smqtk.exceptions.InvalidUriError,
-            smqtk.representation.data_element.from_uri,
+            InvalidUriError,
+            from_uri,
             'whatever',
             impl_generator
         )
@@ -98,8 +96,8 @@ class TestDataElementHighLevelFromUri (unittest.TestCase):
             return {UnresolvableElement}
 
         self.assertRaises(
-            smqtk.exceptions.InvalidUriError,
-            smqtk.representation.data_element.from_uri,
+            InvalidUriError,
+            from_uri,
             'something',
             impl_generator
         )
@@ -113,7 +111,7 @@ class TestDataElementHighLevelFromUri (unittest.TestCase):
 
         # URI that can be resolved by ResolvableElement
         self.assertIsInstance(
-            smqtk.representation.data_element.from_uri(
+            from_uri(
                 "resolvable://data",
                 impl_generator
             ),
@@ -122,7 +120,7 @@ class TestDataElementHighLevelFromUri (unittest.TestCase):
 
         # bad URI even though something can resolve it
         self.assertRaises(
-            smqtk.exceptions.InvalidUriError,
-            smqtk.representation.data_element.from_uri,
+            InvalidUriError,
+            from_uri,
             'not_resolvable', impl_generator
         )

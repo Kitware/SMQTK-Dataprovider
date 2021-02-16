@@ -3,9 +3,9 @@ import os
 import requests
 import unittest
 
-from smqtk.exceptions import InvalidUriError, ReadOnlyError
-from smqtk.representation.data_element.url_element import DataUrlElement
-from smqtk.utils.configuration import configuration_test_helper
+from smqtk_core.configuration import configuration_test_helper
+from smqtk_dataprovider.exceptions import InvalidUriError, ReadOnlyError
+from smqtk_dataprovider.impls.data_element.url import DataUrlElement
 
 from tests import TEST_DATA_DIR
 
@@ -29,15 +29,15 @@ class TestDataUrlElement (unittest.TestCase):
 
     # Public domain Lenna image from Wikipedia, same as local test image file
     EXAMPLE_URL = \
-        'https://data.kitware.com/api/v1/file/5820bbeb8d777f10f26efc2f/download'
-    EXAMPLE_PTH = os.path.join(TEST_DATA_DIR, 'Lenna.png')
+        'https://data.kitware.com/api/v1/file/6025ba632fa25629b964a1bd/download'
+    EXAMPLE_PTH = os.path.join(TEST_DATA_DIR, 'grace_hopper.png')
 
     def test_is_usable(self):
         # Should always be available, because local/intranet networks are a
         # thing.
         self.assertTrue(DataUrlElement.is_usable())
 
-    @mock.patch('smqtk.representation.data_element.url_element.requests.get')
+    @mock.patch('smqtk_dataprovider.impls.data_element.url.requests.get')
     def test_configuration(self, m_req_get):
         # Mocking requests usage to no actually head into the network.
         inst = DataUrlElement(self.EXAMPLE_URL)
@@ -103,14 +103,14 @@ class TestDataUrlElement (unittest.TestCase):
             'ftp://www.kitware.com'
         )
 
-    @mock.patch('smqtk.representation.data_element.url_element.requests.get')
+    @mock.patch('smqtk_dataprovider.impls.data_element.url.requests.get')
     def test_is_empty_zero_bytes(self, _m_requests_get):
         e = DataUrlElement('some-address')
         # simulate no content bytes returned
         e.get_bytes = mock.MagicMock(return_value='')
         self.assertTrue(e.is_empty())
 
-    @mock.patch('smqtk.representation.data_element.url_element.requests.get')
+    @mock.patch('smqtk_dataprovider.impls.data_element.url.requests.get')
     def test_is_empty_nonzero_bytes(self, _m_requests_get):
         e = DataUrlElement('some-address')
         # simulate some content bytes returned
@@ -123,7 +123,7 @@ class TestDataUrlElement (unittest.TestCase):
         self.assertEqual(e.get_bytes(), open(self.EXAMPLE_PTH, 'rb').read())
         self.assertEqual(e.content_type(), 'image/png')
 
-    @mock.patch('smqtk.representation.data_element.url_element.requests.get')
+    @mock.patch('smqtk_dataprovider.impls.data_element.url.requests.get')
     def test_get_bytes_404_return_code(self, m_requests_get):
         e = DataUrlElement('some-address')
 

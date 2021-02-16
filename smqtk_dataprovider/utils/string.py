@@ -1,8 +1,5 @@
 import random
 
-# noinspection PyUnresolvedReferences
-from six.moves import range
-
 
 def partition_string(s, segments):
     """

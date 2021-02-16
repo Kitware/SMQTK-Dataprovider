@@ -1,16 +1,19 @@
+import logging
+import pickle
 import threading
 
-from six.moves import cPickle as pickle
-
-from smqtk.exceptions import ReadOnlyError
-from smqtk.representation import DataElement, DataSet
-from smqtk.utils import SimpleTimer
-from smqtk.utils.configuration import (
+from smqtk_core.configuration import (
     from_config_dict,
     make_default_config,
     to_config_dict
 )
-from smqtk.utils.dict import merge_dict
+from smqtk_core.dict import merge_dict
+from smqtk_dataprovider import DataElement, DataSet
+from smqtk_dataprovider.exceptions import ReadOnlyError
+from smqtk_dataprovider.utils import SimpleTimer
+
+
+LOG = logging.getLogger(__name__)
 
 
 class DataMemorySet (DataSet):
@@ -155,7 +158,7 @@ class DataMemorySet (DataSet):
 
             with self._element_map_lock:
                 with SimpleTimer("Caching memory data-set table",
-                                 self._log.debug):
+                                 LOG.debug):
                     self.cache_element.set_bytes(
                         pickle.dumps(self._element_map, self.pickle_protocol)
                     )

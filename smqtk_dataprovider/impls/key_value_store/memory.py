@@ -1,12 +1,17 @@
+import logging
+import pickle
 import threading
 
-import six
-from six.moves import cPickle as pickle
+from smqtk_dataprovider import DataElement, KeyValueStore
+from smqtk_dataprovider.interfaces.key_value_store import NO_DEFAULT_VALUE
+from smqtk_core.configuration import (
+    make_default_config,
+    from_config_dict,
+    to_config_dict
+)
 
-from smqtk.representation import DataElement, KeyValueStore
-from smqtk.representation.key_value import NO_DEFAULT_VALUE
-from smqtk.utils.configuration \
-    import make_default_config, from_config_dict, to_config_dict
+
+LOG = logging.getLogger(__name__)
 
 
 class MemoryKeyValueStore (KeyValueStore):
@@ -116,7 +121,7 @@ class MemoryKeyValueStore (KeyValueStore):
         if self._cache_element is not None:
             # TODO(paul.tunison): Some other serialization than Pickle.
             #   - pickle loading allows arbitrary code execution on host.
-            self._log.debug("Caching table to {}".format(self._cache_element))
+            LOG.debug("Caching table to {}".format(self._cache_element))
             self._cache_element.set_bytes(
                 pickle.dumps(self._table, self.PICKLE_PROTOCOL))
 
@@ -140,7 +145,7 @@ class MemoryKeyValueStore (KeyValueStore):
         :return: Iterator over keys in this store.
         :rtype: __generator[collections.abc.Hashable]
         """
-        return six.iterkeys(self._table)
+        return self._table.keys()
 
     def is_read_only(self):
         """

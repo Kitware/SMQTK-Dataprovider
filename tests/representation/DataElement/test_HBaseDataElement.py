@@ -1,9 +1,9 @@
 import unittest.mock as mock
 from unittest import TestCase
 
-import smqtk.exceptions
-from smqtk.representation.data_element.hbase_element import HBaseDataElement
-from smqtk.utils.configuration import configuration_test_helper
+from smqtk_core.configuration import configuration_test_helper
+from smqtk_dataprovider.exceptions import ReadOnlyError
+from smqtk_dataprovider.impls.data_element.hbase import HBaseDataElement
 
 
 class TestHBaseDataElement(TestCase):
@@ -76,6 +76,6 @@ class TestHBaseDataElement(TestCase):
         # Read-only element
         e = self.make_element(b'')
         self.assertRaises(
-            smqtk.exceptions.ReadOnlyError,
+            ReadOnlyError,
             e.set_bytes, b'some bytes'
         )

@@ -3,15 +3,16 @@ from multiprocessing import RLock
 from typing import Dict, Optional, Tuple
 import uuid
 
-from smqtk.utils import SmqtkObject
+
+LOG = logging.getLogger(__name__)
+
 
 try:
     import psycopg2  # type: ignore
     from psycopg2.pool import ThreadedConnectionPool  # type: ignore
     from psycopg2.extensions import connection  # type: ignore
 except ImportError as ex:
-    logging.getLogger(__name__)\
-           .warning("Failed to import psycopg2: %s", str(ex))
+    LOG.warning("Failed to import psycopg2: %s", str(ex))
     psycopg2 = None
     ThreadedConnectionPool = None
     connection = None
@@ -101,7 +102,7 @@ def norm_psql_cmd_string(s):
     return ' '.join(s.split())
 
 
-class PsqlConnectionHelper (SmqtkObject):
+class PsqlConnectionHelper:
     """
     Helper class for things that interact with a PostgreSQL database.
     """
@@ -364,7 +365,7 @@ class PsqlConnectionHelper (SmqtkObject):
             raise ValueError("Cannot have a batch size less than 0 "
                              "(given: %s)." % batch_size)
 
-        self._log.debug("starting multi operation (batch_size: %s)", batch_size)
+        LOG.debug("starting multi operation (batch_size: %s)", batch_size)
 
         # Lazy initialize -- only if there are elements to iterate over
         conn: connection = None
@@ -386,7 +387,7 @@ class PsqlConnectionHelper (SmqtkObject):
 
                 if batch_size and len(batch) >= batch_size:
                     i += 1
-                    self._log.debug('-- batch %d (size: %d)', i, len(batch))
+                    LOG.debug('-- batch %d (size: %d)', i, len(batch))
 
                     with conn:
                         with conn.cursor() as cur:
@@ -400,7 +401,7 @@ class PsqlConnectionHelper (SmqtkObject):
                     batch = []
 
             if batch:
-                self._log.debug('-- tail batch (size: %d)', len(batch))
+                LOG.debug('-- tail batch (size: %d)', len(batch))
                 with conn:
                     with conn.cursor() as cur:
                         self.ensure_table(cur)
@@ -421,4 +422,4 @@ class PsqlConnectionHelper (SmqtkObject):
             # conn.__exit__ doesn't close connection, just the transaction
             if conn is not None:
                 self.connection_pool.putconn(conn)
-            self._log.debug('-- done')
+            LOG.debug('-- done')

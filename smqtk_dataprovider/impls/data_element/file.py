@@ -2,14 +2,12 @@ import mimetypes
 import os.path as osp
 import re
 
-import six
-
-from smqtk.exceptions import InvalidUriError, ReadOnlyError
-from smqtk.representation import DataElement
-from smqtk.utils.file import safe_file_write
+from smqtk_dataprovider.exceptions import InvalidUriError, ReadOnlyError
+from smqtk_dataprovider import DataElement
+from smqtk_dataprovider.utils.file import safe_file_write
 
 
-STR_NONE_TYPES = six.string_types + (type(None),)
+STR_NONE_TYPES = (str, type(None))
 
 
 class DataFileElement (DataElement):
@@ -91,15 +89,15 @@ class DataFileElement (DataElement):
 
         Example
         -------
-        >>> from smqtk.representation.data_element import file_element
-        >>> self = DataFileElement(file_element.__file__)
-        >>> assert isinstance(self.get_bytes(), six.binary_type)
+        >>> from smqtk_dataprovider.impls.data_element import file
+        >>> self = DataFileElement(file.__file__)
+        >>> assert isinstance(self.get_bytes(), bytes)
         >>> self = DataFileElement('does-not-exist')
-        >>> assert isinstance(self.get_bytes(), six.binary_type)
+        >>> assert isinstance(self.get_bytes(), bytes)
         """
         super(DataFileElement, self).__init__()
 
-        assert isinstance(filepath, six.string_types), \
+        assert isinstance(filepath, str), \
             "File path must be a string."
         assert isinstance(explicit_mimetype, STR_NONE_TYPES), \
             "Explicit mimetype must either be a string or None."
@@ -158,7 +156,7 @@ class DataFileElement (DataElement):
         """
         # Either read from the non-empty file, or return empty bytes.
         return (not self.is_empty() and open(self._filepath, 'rb').read()) \
-            or six.b("")
+            or b""
 
     def writable(self):
         """
@@ -215,6 +213,3 @@ class DataFileElement (DataElement):
             if abs_temp_dir != osp.dirname(self._filepath):
                 return super(DataFileElement, self).write_temp(temp_dir)
         return self._filepath
-
-
-DATA_ELEMENT_CLASS = DataFileElement

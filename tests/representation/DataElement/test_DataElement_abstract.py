@@ -7,20 +7,14 @@ import unittest.mock as mock
 import os.path as osp
 import tempfile
 import unittest
-import six
 
-import smqtk.exceptions
-import smqtk.representation.data_element
-
-if six.PY2:
-    builtin_open = '__builtin__.open'
-else:
-    builtin_open = 'builtins.open'
+from smqtk_dataprovider import DataElement
+from smqtk_dataprovider.exceptions import NoUriResolutionError, ReadOnlyError
 
 
 # because this has a stable mimetype conversion
 EXPECTED_CONTENT_TYPE = "image/png"
-EXPECTED_BYTES = six.b("hello world")
+EXPECTED_BYTES = b"hello world"
 EXPECTED_MD5 = hashlib.md5(EXPECTED_BYTES).hexdigest()
 EXPECTED_SHA1 = hashlib.sha1(EXPECTED_BYTES).hexdigest()
 EXPECTED_SHA512 = hashlib.sha512(EXPECTED_BYTES).hexdigest()
@@ -35,7 +29,7 @@ tempfile.gettempdir()
 
 
 # noinspection PyClassHasNoInit,PyAbstractClass
-class DummyDataElement (smqtk.representation.data_element.DataElement):
+class DummyDataElement (DataElement):
 
     TEST_WRITABLE = True
     TEST_BYTES = EXPECTED_BYTES
@@ -72,7 +66,7 @@ class TestDataElementAbstract (unittest.TestCase):
 
     def test_from_uri_default(self):
         self.assertRaises(
-            smqtk.exceptions.NoUriResolutionError,
+            NoUriResolutionError,
             DummyDataElement.from_uri, 'some uri'
         )
 
@@ -116,11 +110,11 @@ class TestDataElementAbstract (unittest.TestCase):
         sha1 = de.sha512()
         self.assertEqual(sha1, EXPECTED_SHA512)
 
-    @mock.patch('smqtk.representation.data_element.safe_create_dir')
+    @mock.patch('smqtk_dataprovider.interfaces.data_element.safe_create_dir')
     @mock.patch('fcntl.fcntl')  # global
     @mock.patch('os.close')  # global
     @mock.patch('os.open')  # global
-    @mock.patch(builtin_open)
+    @mock.patch("builtins.open")
     def test_content_type_extension(self,
                                     _mock_open, _mock_os_open, _mock_os_close,
                                     _mock_fcntl, _mock_scd):
@@ -142,11 +136,11 @@ class TestDataElementAbstract (unittest.TestCase):
     #   - os.open is used under the hood of tempfile to open a file (which also
     #       creates it on disk).
 
-    @mock.patch('smqtk.representation.data_element.safe_create_dir')
+    @mock.patch('smqtk_dataprovider.interfaces.data_element.safe_create_dir')
     @mock.patch('fcntl.fcntl')  # global
     @mock.patch('os.close')  # global
     @mock.patch('os.open')  # global
-    @mock.patch(builtin_open)
+    @mock.patch("builtins.open")
     def test_writeTemp_noExisting_noDir(self,
                                         mock_open, _mock_os_open,
                                         _mock_os_close, _mock_fcntl, mock_scd):
@@ -157,11 +151,11 @@ class TestDataElementAbstract (unittest.TestCase):
         self.assertTrue(mock_open.called)
         self.assertEqual(osp.dirname(fp), tempfile.gettempdir())
 
-    @mock.patch('smqtk.representation.data_element.safe_create_dir')
+    @mock.patch('smqtk_dataprovider.interfaces.data_element.safe_create_dir')
     @mock.patch('fcntl.fcntl')  # global
     @mock.patch('os.close')  # global
     @mock.patch('os.open')  # global
-    @mock.patch(builtin_open)
+    @mock.patch("builtins.open")
     def test_writeTemp_noExisting_givenDir(self,
                                            mock_open, _mock_os_open,
                                            _mock_os_close, _mock_fcntl,
@@ -176,12 +170,12 @@ class TestDataElementAbstract (unittest.TestCase):
         self.assertNotEqual(osp.dirname(fp), tempfile.gettempdir())
         self.assertEqual(osp.dirname(fp), target_dir)
 
-    @mock.patch("smqtk.representation.data_element.file_element.osp.isfile")
-    @mock.patch('smqtk.representation.data_element.safe_create_dir')
+    @mock.patch("smqtk_dataprovider.interfaces.data_element.osp.isfile")
+    @mock.patch('smqtk_dataprovider.interfaces.data_element.safe_create_dir')
     @mock.patch('fcntl.fcntl')  # global
     @mock.patch('os.close')  # global
     @mock.patch('os.open')  # global
-    @mock.patch(builtin_open)
+    @mock.patch("builtins.open")
     def test_writeTemp_hasExisting_noDir(self,
                                          mock_open, _mock_os_open,
                                          _mock_os_close, _mock_fcntl, mock_scd,
@@ -216,11 +210,11 @@ class TestDataElementAbstract (unittest.TestCase):
         # false so clean_temp doesn't try to remove files that don't exist.
         simulate = False
 
-    @mock.patch('smqtk.representation.data_element.safe_create_dir')
+    @mock.patch('smqtk_dataprovider.interfaces.data_element.safe_create_dir')
     @mock.patch('fcntl.fcntl')  # global
     @mock.patch('os.close')  # global
     @mock.patch('os.open')  # global
-    @mock.patch(builtin_open)
+    @mock.patch("builtins.open")
     def test_writeTemp_hasExisting_givenNewDir(self, mock_open, _mock_os_open,
                                                _mock_os_close, _mock_fcntl,
                                                mock_scd):
@@ -240,12 +234,12 @@ class TestDataElementAbstract (unittest.TestCase):
         self.assertTrue(mock_open.called)
         self.assertEqual(osp.dirname(fp), target_dir)
 
-    @mock.patch("smqtk.representation.data_element.file_element.osp.isfile")
-    @mock.patch('smqtk.representation.data_element.safe_create_dir')
+    @mock.patch("smqtk_dataprovider.interfaces.data_element.osp.isfile")
+    @mock.patch('smqtk_dataprovider.interfaces.data_element.safe_create_dir')
     @mock.patch('fcntl.fcntl')  # global
     @mock.patch('os.close')  # global
     @mock.patch('os.open')  # global
-    @mock.patch(builtin_open)
+    @mock.patch("builtins.open")
     def test_writeTemp_hasExisting_givenExistingDir(self, mock_open,
                                                     _mock_os_open,
                                                     _mock_os_close,
@@ -289,7 +283,7 @@ class TestDataElementAbstract (unittest.TestCase):
         # false so clean_temp doesn't try to remove files that don't exist.
         simulate = False
 
-    @mock.patch("smqtk.representation.data_element.os")
+    @mock.patch("smqtk_dataprovider.interfaces.data_element.os")
     def test_cleanTemp_noTemp(self, mock_os):
         # should do all of nothing
         de = DummyDataElement()
@@ -299,7 +293,7 @@ class TestDataElementAbstract (unittest.TestCase):
         self.assertFalse(mock_os.path.isfile.called)
         self.assertFalse(mock_os.remove.called)
 
-    @mock.patch("smqtk.representation.data_element.os")
+    @mock.patch("smqtk_dataprovider.interfaces.data_element.os")
     def test_cleanTemp_hasTemp_badPath(self, mock_os):
         de = DummyDataElement()
         de._temp_filepath_stack.append('tmp/thing')
@@ -310,7 +304,7 @@ class TestDataElementAbstract (unittest.TestCase):
         mock_os.path.isfile.assert_called_once_with('tmp/thing')
         self.assertFalse(mock_os.remove.called)
 
-    @mock.patch("smqtk.representation.data_element.os")
+    @mock.patch("smqtk_dataprovider.interfaces.data_element.os")
     def test_cleanTemp_hasTemp_validPath(self, mock_os):
         expected_path = '/tmp/something'
 
@@ -333,14 +327,14 @@ class TestDataElementAbstract (unittest.TestCase):
         de = DummyDataElement()
         de.TEST_BYTES = EXPECTED_BYTES
         br = de.to_buffered_reader()
-        self.assertEqual(br.readlines(), [six.b('hello world')])
+        self.assertEqual(br.readlines(), [b'hello world'])
 
-        de.TEST_BYTES = six.b('some content\nwith new \nlines')
+        de.TEST_BYTES = b'some content\nwith new \nlines'
         br = de.to_buffered_reader()
         self.assertEqual(br.readlines(),
-                         [six.b('some content\n'),
-                          six.b('with new \n'),
-                          six.b('lines')])
+                         [b'some content\n',
+                          b'with new \n',
+                          b'lines'])
 
     def test_is_read_only(self):
         de = DummyDataElement()
@@ -356,8 +350,8 @@ class TestDataElementAbstract (unittest.TestCase):
 
         de.TEST_WRITABLE = False
         self.assertRaises(
-            smqtk.exceptions.ReadOnlyError,
-            de.set_bytes, six.b('test bytes')
+            ReadOnlyError,
+            de.set_bytes, b"test bytes"
         )
 
         # Caches shouldn't have been invalidated due to error
@@ -368,7 +362,7 @@ class TestDataElementAbstract (unittest.TestCase):
         # trigger UUID cache at least once
         self.assertEqual(de.uuid(), EXPECTED_UUID)
 
-        new_expected_bytes = six.b('some new byte content')
+        new_expected_bytes = b"some new byte content"
         new_expected_uuid = hashlib.sha1(new_expected_bytes).hexdigest()
 
         de.TEST_WRITABLE = True

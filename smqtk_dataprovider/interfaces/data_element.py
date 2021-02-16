@@ -9,17 +9,16 @@ import os.path as osp
 import tempfile
 from typing import Deque
 
-from smqtk.exceptions import InvalidUriError, NoUriResolutionError, \
+from smqtk_dataprovider.exceptions import InvalidUriError, NoUriResolutionError, \
     ReadOnlyError
-from smqtk.representation import SmqtkRepresentation
-from smqtk.utils.file import safe_create_dir
-from smqtk.utils.plugin import Pluggable
+from smqtk_dataprovider.utils.file import safe_create_dir
+from smqtk_core import Configurable, Pluggable
 
 
 MIMETYPES = mimetypes.MimeTypes()
 
 
-class DataElement (SmqtkRepresentation, Pluggable):
+class DataElement (Configurable, Pluggable):
     """
     Abstract interface for a byte data container.
 

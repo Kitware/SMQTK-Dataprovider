@@ -1,8 +1,9 @@
-import six
-from six.moves.urllib_parse import urlparse
+import logging
+from io import BytesIO
+from urllib.parse import urlparse
 
-from smqtk.exceptions import InvalidUriError, ReadOnlyError
-from smqtk.representation import DataElement
+from smqtk_dataprovider.exceptions import InvalidUriError, ReadOnlyError
+from smqtk_dataprovider import DataElement
 
 try:
     import girder_client  # type: ignore
@@ -10,9 +11,7 @@ except ImportError:
     girder_client = None
 
 
-__all__ = [
-    'GirderDataElement',
-]
+LOG = logging.getLogger(__name__)
 
 
 class GirderDataElement (DataElement):
@@ -150,8 +149,7 @@ class GirderDataElement (DataElement):
 
     def content_type(self):
         if self._content_type is None:
-            self._log.debug("Getting content type for file ID %s"
-                            % self.file_id)
+            LOG.debug("Getting content type for file ID %s" % self.file_id)
             file_model = self.get_file_model()
 
             if file_model is not None:
@@ -197,8 +195,8 @@ class GirderDataElement (DataElement):
         :rtype: bytes
         """
         # Download file bytes from girder
-        content = six.BytesIO()
-        self._log.debug("Getting bytes for file ID %s", self.file_id)
+        content = BytesIO()
+        LOG.debug("Getting bytes for file ID %s", self.file_id)
         self.gc.downloadFile(self.file_id, content)
         return bytes(content.getvalue())
 
@@ -242,7 +240,7 @@ class GirderDataElement (DataElement):
 
         try:
             # noinspection PyTypeChecker
-            self.gc.uploadFileContents(self.file_id, six.BytesIO(b), len(b))
+            self.gc.uploadFileContents(self.file_id, BytesIO(b), len(b))
         except girder_client.HttpError as e:
             if e.status == 401:
                 raise ReadOnlyError('Unauthorized access to write to Girder '

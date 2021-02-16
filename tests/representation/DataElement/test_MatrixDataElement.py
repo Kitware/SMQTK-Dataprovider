@@ -1,10 +1,10 @@
+from io import BytesIO
 import numpy as np
 import pytest
-from six import BytesIO
 
-from smqtk.exceptions import ReadOnlyError
-from smqtk.representation.data_element.matrix import MatrixDataElement
-from smqtk.utils.configuration import configuration_test_helper
+from smqtk_core.configuration import configuration_test_helper
+from smqtk_dataprovider.exceptions import ReadOnlyError
+from smqtk_dataprovider.impls.data_element.matrix import MatrixDataElement
 
 
 class TestMatrixDataElement (object):

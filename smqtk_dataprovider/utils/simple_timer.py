@@ -1,9 +1,11 @@
+import logging
 import time
 
-from smqtk.utils import SmqtkObject
+
+LOG = logging.getLogger(__name__)
 
 
-class SimpleTimer (SmqtkObject):
+class SimpleTimer:
     """
     Little class to wrap the timing of things. To be use with the ``with``
     statement.
@@ -26,7 +28,7 @@ class SimpleTimer (SmqtkObject):
         if self._log_func:
             self._log_func(self._msg, *self._msg_args)
         else:
-            self._log.info(self._msg % self._msg_args)
+            LOG.info(self._msg % self._msg_args)
         self._s = time.time()
 
     def __exit__(self, *_):
@@ -34,5 +36,5 @@ class SimpleTimer (SmqtkObject):
             self._log_func("%s -> %f s", self._msg % self._msg_args,
                            time.time() - self._s)
         else:
-            self._log.info("%s -> %f s" % (self._msg % self._msg_args,
-                                           time.time() - self._s))
+            LOG.info("%s -> %f s" % (self._msg % self._msg_args,
+                                     time.time() - self._s))

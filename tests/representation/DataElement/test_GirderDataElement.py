@@ -5,12 +5,12 @@ import unittest
 import pytest
 import requests
 
-from smqtk.exceptions import InvalidUriError, ReadOnlyError
-from smqtk.representation.data_element.girder import (
+from smqtk_core.configuration import configuration_test_helper
+from smqtk_dataprovider.exceptions import InvalidUriError, ReadOnlyError
+from smqtk_dataprovider.impls.data_element.girder import (
     GirderDataElement,
     girder_client  # not None when GirderDataElement is usable.
 )
-from smqtk.utils.configuration import configuration_test_helper
 
 from tests import TEST_DATA_DIR
 
@@ -190,7 +190,7 @@ class TestGirderDataElement (unittest.TestCase):
         e.get_file_model = mock.MagicMock(return_value={'size': 7})
         self.assertFalse(e.is_empty())
 
-    @mock.patch('smqtk.representation.data_element.girder.GirderDataElement'
+    @mock.patch('smqtk_dataprovider.impls.data_element.girder.GirderDataElement'
                 '.get_file_model')
     @mock.patch('girder_client.GirderClient.getFolder')
     @mock.patch('girder_client.GirderClient.getItem')

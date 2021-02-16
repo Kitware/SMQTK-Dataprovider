@@ -1,15 +1,15 @@
-from smqtk.representation import (
+from smqtk_dataprovider import (
     DataElement,
     DataSet,
     KeyValueStore,
 )
-from smqtk.representation.key_value.memory import MemoryKeyValueStore
-from smqtk.utils.configuration import (
+from smqtk_core.configuration import (
     from_config_dict,
     make_default_config,
     to_config_dict
 )
-from smqtk.utils.dict import merge_dict
+from smqtk_core.dict import merge_dict
+from smqtk_dataprovider.impls.key_value_store.memory import MemoryKeyValueStore
 
 
 DFLT_KVSTORE = MemoryKeyValueStore()

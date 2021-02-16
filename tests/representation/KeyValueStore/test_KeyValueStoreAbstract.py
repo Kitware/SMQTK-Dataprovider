@@ -1,9 +1,10 @@
-import collections
-import unittest.mock as mock
+from typing import Iterable
 import unittest
+import unittest.mock as mock
 
-from smqtk.exceptions import ReadOnlyError
-from smqtk.representation.key_value import KeyValueStore, NO_DEFAULT_VALUE
+from smqtk_dataprovider import KeyValueStore
+from smqtk_dataprovider.exceptions import ReadOnlyError
+from smqtk_dataprovider.interfaces.key_value_store import NO_DEFAULT_VALUE
 
 
 class DummyKVStore (KeyValueStore):
@@ -95,7 +96,7 @@ class TestKeyValueStoreAbstract (unittest.TestCase):
         # far, and ``get`` method should not have been called yet.
         # called yet.
         v_iter = s.values()
-        self.assertIsInstance(v_iter, collections.abc.Iterable)
+        self.assertIsInstance(v_iter, Iterable)
         self.assertEqual(s.keys.call_count, 1)
         self.assertEqual(s.get.call_count, 0)
 

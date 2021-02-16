@@ -1,10 +1,10 @@
+from io import BytesIO
 from typing import Optional, Tuple
 
 import numpy
-from six import BytesIO
 
-from smqtk.exceptions import ReadOnlyError
-from smqtk.representation import DataElement
+from smqtk_dataprovider import DataElement
+from smqtk_dataprovider.exceptions import ReadOnlyError
 
 
 class MatrixDataElement (DataElement):  # lgtm[py/missing-equals]

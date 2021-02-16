@@ -1,12 +1,15 @@
+import logging
 import os
 import os.path as osp
+import pickle
 import re
 
-from six.moves import cPickle as pickle
+from smqtk_dataprovider import DataElement, DataSet
+from smqtk_dataprovider.utils.file import safe_create_dir, iter_directory_files
+from smqtk_dataprovider.utils.string import partition_string
 
-from smqtk.representation import DataElement, DataSet
-from smqtk.utils.file import safe_create_dir, iter_directory_files
-from smqtk.utils.string import partition_string
+
+LOG = logging.getLogger(__name__)
 
 
 class DataFileSet (DataSet):
@@ -89,8 +92,7 @@ class DataFileSet (DataSet):
         self._uuid_chunk = uuid_chunk
         self.pickle_protocol = pickle_protocol
 
-        self._log.debug("Initializing FileSet under root dir: %s",
-                        self._root_dir)
+        LOG.debug("Initializing FileSet under root dir: %s", self._root_dir)
 
     def _iter_file_tree(self):
         """
@@ -206,7 +208,7 @@ class DataFileSet (DataSet):
             safe_create_dir(osp.dirname(fp))
             with open(fp, 'wb') as f:
                 pickle.dump(e, f, self.pickle_protocol)
-            self._log.debug("Wrote out element %s", e)
+            LOG.debug("Wrote out element %s", e)
 
     def get_data(self, uuid):
         """

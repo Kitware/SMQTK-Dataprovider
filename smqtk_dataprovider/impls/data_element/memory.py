@@ -1,9 +1,9 @@
 import base64
 import re
 
-from smqtk.exceptions import InvalidUriError, ReadOnlyError
-from smqtk.representation import DataElement
-from smqtk.utils.dict import merge_dict
+from smqtk_core.dict import merge_dict
+from smqtk_dataprovider import DataElement
+from smqtk_dataprovider.exceptions import InvalidUriError, ReadOnlyError
 
 
 BYTES_CONFIG_ENCODING = 'latin-1'
@@ -238,6 +238,3 @@ class DataMemoryElement (DataElement):
             self._bytes = b
         else:
             raise ReadOnlyError("This memory element cannot be written to.")
-
-
-DATA_ELEMENT_CLASS = DataMemoryElement

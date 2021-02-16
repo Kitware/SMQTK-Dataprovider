@@ -1,5 +1,5 @@
-from smqtk.exceptions import ReadOnlyError
-from smqtk.representation import DataElement
+from smqtk_dataprovider import DataElement
+from smqtk_dataprovider.exceptions import ReadOnlyError
 
 
 # attempt to import required modules
@@ -119,6 +119,3 @@ class HBaseDataElement (DataElement):
 
         """
         raise ReadOnlyError("HBase elements cannot write data.")
-
-
-DATA_ELEMENT_CLASS = HBaseDataElement

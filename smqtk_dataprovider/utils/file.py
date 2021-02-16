@@ -282,25 +282,3 @@ def file_mimetype_filemagic(filepath):
         raise IOError(21, "Is a directory: '%s'" % filepath)
     else:
         raise IOError(2, "No such file or directory: '%s'" % filepath)
-
-
-def file_mimetype_tika(filepath):
-    """
-    Determine file mimetype using ``tika`` module.
-
-    The file the given path refers to must exist. This function may fail under
-    multiprocessing situations.
-
-    :raises ImportError: ``tika`` python module not available.
-    :raises IOError: ``filepath`` did not refer to an existing file.
-
-    :param filepath: Path to the (existing) file to determine the mimetype of.
-    :type filepath: str
-
-    :return: MIMETYPE string identifier.
-    :rtype: str
-
-    """
-    # noinspection PyUnresolvedReferences
-    import tika.detector  # type: ignore
-    return tika.detector.from_file(filepath)

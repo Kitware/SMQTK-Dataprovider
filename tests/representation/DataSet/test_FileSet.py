@@ -1,12 +1,10 @@
-from __future__ import division, print_function
-import unittest.mock as mock
 import os
-import six
 import unittest
+import unittest.mock as mock
 
-from smqtk.representation.data_element.memory_element import DataMemoryElement
-from smqtk.representation.data_set.file_set import DataFileSet
-from smqtk.utils.configuration import configuration_test_helper
+from smqtk_core.configuration import configuration_test_helper
+from smqtk_dataprovider.impls.data_element.memory import DataMemoryElement
+from smqtk_dataprovider.impls.data_set.file import DataFileSet
 
 from tests import TEST_DATA_DIR
 
@@ -45,7 +43,7 @@ class TestDataFileSet (unittest.TestCase):
         DataFileSet('relative/path', uuid_chunk=2346)
 
     def test_iter_file_tree_chunk0(self):
-        test_dir_path = os.path.join(TEST_DATA_DIR, 'test_data_file_set_tree')
+        test_dir_path = os.path.join(TEST_DATA_DIR, 'test_data_file_tree')
         expected_filepaths = {
             os.path.join(test_dir_path, 'UUID_0.dataElement'),
             os.path.join(test_dir_path, 'UUID_1.dataElement'),
@@ -57,7 +55,7 @@ class TestDataFileSet (unittest.TestCase):
         self.assertSetEqual(actual_filepaths, expected_filepaths)
 
     def test_iter_file_tree_chunk3(self):
-        test_dir_path = os.path.join(TEST_DATA_DIR, 'test_data_file_set_tree')
+        test_dir_path = os.path.join(TEST_DATA_DIR, 'test_data_file_tree')
         expected_filepaths = {
             os.path.join(test_dir_path, '0/0/UUID_000.dataElement'),
             os.path.join(test_dir_path, '0/0/UUID_001.dataElement'),
@@ -71,7 +69,7 @@ class TestDataFileSet (unittest.TestCase):
         self.assertSetEqual(actual_filepaths, expected_filepaths)
 
     def test_iter_file_tree_chunk4(self):
-        test_dir_path = os.path.join(TEST_DATA_DIR, 'test_data_file_set_tree')
+        test_dir_path = os.path.join(TEST_DATA_DIR, 'test_data_file_tree')
         expected_filepaths = {
             os.path.join(test_dir_path, '4/3/2/1/UUID_43210.dataElement'),
         }
@@ -119,8 +117,8 @@ class TestDataFileSet (unittest.TestCase):
             '/a/b/UUID_abc.dataElement'
         )
 
-    @mock.patch('smqtk.representation.data_set.file_set.pickle')
-    @mock.patch('smqtk.representation.data_set.file_set.open',
+    @mock.patch('smqtk_dataprovider.impls.data_set.file.pickle')
+    @mock.patch('smqtk_dataprovider.impls.data_set.file.open',
                 new_callable=mock.MagicMock)
     def test_iter(self, m_open, m_pickle):
         expected_file_tree_iter = ['/a', '/b', '/d']
@@ -144,14 +142,14 @@ class TestDataFileSet (unittest.TestCase):
     def test_uuids(self):
         # mocking self iteration results
         expected_data_elements = [
-            DataMemoryElement(six.b('a')),
-            DataMemoryElement(six.b('b')),
-            DataMemoryElement(six.b('v')),
+            DataMemoryElement(b"a"),
+            DataMemoryElement(b"b"),
+            DataMemoryElement(b"v"),
         ]
         expected_uuid_set = {
-            DataMemoryElement(six.b('a')).uuid(),
-            DataMemoryElement(six.b('b')).uuid(),
-            DataMemoryElement(six.b('v')).uuid(),
+            DataMemoryElement(b"a").uuid(),
+            DataMemoryElement(b"b").uuid(),
+            DataMemoryElement(b"v").uuid(),
         }
 
         # Replacement iterator for DataFileSet to yield expected test values.
@@ -159,7 +157,7 @@ class TestDataFileSet (unittest.TestCase):
             for e in expected_data_elements:
                 yield e
 
-        with mock.patch('smqtk.representation.data_set.file_set.DataFileSet'
+        with mock.patch('smqtk_dataprovider.impls.data_set.file.DataFileSet'
                         '.__iter__') as m_iter:
             m_iter.side_effect = test_iter
 
@@ -174,10 +172,10 @@ class TestDataFileSet (unittest.TestCase):
             dfs.add_data, 'not a dataElement'
         )
 
-    @mock.patch('smqtk.representation.data_set.file_set.pickle')
-    @mock.patch('smqtk.representation.data_set.file_set.open')
-    @mock.patch('smqtk.representation.data_set.file_set.safe_create_dir')
-    @mock.patch('smqtk.representation.data_set.file_set.isinstance')
+    @mock.patch('smqtk_dataprovider.impls.data_set.file.pickle')
+    @mock.patch('smqtk_dataprovider.impls.data_set.file.open')
+    @mock.patch('smqtk_dataprovider.impls.data_set.file.safe_create_dir')
+    @mock.patch('smqtk_dataprovider.impls.data_set.file.isinstance')
     def test_add_data_single(self, m_isinstance, m_scd, m_open, _m_pickle):
         # Pretend that we are giving DataElement instances
         m_isinstance.return_value = True
@@ -207,10 +205,10 @@ class TestDataFileSet (unittest.TestCase):
         m_scd.assert_called_with('/ab')
         m_open.assert_called_with('/ab/UUID_abcd.dataElement', 'wb')
 
-    @mock.patch('smqtk.representation.data_set.file_set.pickle')
-    @mock.patch('smqtk.representation.data_set.file_set.open')
-    @mock.patch('smqtk.representation.data_set.file_set.safe_create_dir')
-    @mock.patch('smqtk.representation.data_set.file_set.isinstance')
+    @mock.patch('smqtk_dataprovider.impls.data_set.file.pickle')
+    @mock.patch('smqtk_dataprovider.impls.data_set.file.open')
+    @mock.patch('smqtk_dataprovider.impls.data_set.file.safe_create_dir')
+    @mock.patch('smqtk_dataprovider.impls.data_set.file.isinstance')
     def test_add_data_multiple_chunk0(self, m_isinstance, m_scd, m_open,
                                       _m_pickle):
         """
@@ -246,10 +244,10 @@ class TestDataFileSet (unittest.TestCase):
         m_open.assert_any_call('/UUID_1234567.dataElement', 'wb')
         m_open.assert_any_call('/UUID_4F*s93#5.dataElement', 'wb')
 
-    @mock.patch('smqtk.representation.data_set.file_set.pickle')
-    @mock.patch('smqtk.representation.data_set.file_set.open')
-    @mock.patch('smqtk.representation.data_set.file_set.safe_create_dir')
-    @mock.patch('smqtk.representation.data_set.file_set.isinstance')
+    @mock.patch('smqtk_dataprovider.impls.data_set.file.pickle')
+    @mock.patch('smqtk_dataprovider.impls.data_set.file.open')
+    @mock.patch('smqtk_dataprovider.impls.data_set.file.safe_create_dir')
+    @mock.patch('smqtk_dataprovider.impls.data_set.file.isinstance')
     def test_add_data_multiple_chunk3(self, m_isinstance, m_scd, m_open,
                                       _m_pickle):
         """
@@ -286,10 +284,10 @@ class TestDataFileSet (unittest.TestCase):
         m_open.assert_any_call('/123/45/UUID_1234567.dataElement', 'wb')
         m_open.assert_any_call('/4F*/s93/UUID_4F*s93#5.dataElement', 'wb')
 
-    @mock.patch('smqtk.representation.data_set.file_set.pickle')
-    @mock.patch('smqtk.representation.data_set.file_set.open')
-    @mock.patch('smqtk.representation.data_set.file_set.safe_create_dir')
-    @mock.patch('smqtk.representation.data_set.file_set.isinstance')
+    @mock.patch('smqtk_dataprovider.impls.data_set.file.pickle')
+    @mock.patch('smqtk_dataprovider.impls.data_set.file.open')
+    @mock.patch('smqtk_dataprovider.impls.data_set.file.safe_create_dir')
+    @mock.patch('smqtk_dataprovider.impls.data_set.file.isinstance')
     def test_add_data_multiple_chunk3_relative(self, m_isinstance, m_scd,
                                                m_open, _m_pickle):
         # Pretend that we are giving DataElement instances
@@ -326,7 +324,7 @@ class TestDataFileSet (unittest.TestCase):
         m_open.assert_any_call('rel/subdir/4F*/s93/UUID_4F*s93#5.dataElement',
                                'wb')
 
-    @mock.patch('smqtk.representation.data_set.file_set.osp.isfile')
+    @mock.patch('smqtk_dataprovider.impls.data_set.file.osp.isfile')
     def test_get_data_no_file(self, m_isfile):
         # Testing when we generate a filepath that does not point to an existing
         # file, meaning the UUID is referring to a dataElement not a part of our
@@ -340,9 +338,9 @@ class TestDataFileSet (unittest.TestCase):
             dfs.get_data, 'no_exist_uuid'
         )
 
-    @mock.patch('smqtk.representation.data_set.file_set.pickle')
-    @mock.patch('smqtk.representation.data_set.file_set.open')
-    @mock.patch('smqtk.representation.data_set.file_set.osp.isfile')
+    @mock.patch('smqtk_dataprovider.impls.data_set.file.pickle')
+    @mock.patch('smqtk_dataprovider.impls.data_set.file.open')
+    @mock.patch('smqtk_dataprovider.impls.data_set.file.osp.isfile')
     def test_get_data_valid_filepath(self, m_isfile, m_open, m_pickle):
         # Testing that filepath we get back from _fp_for_uuid generator is
         # valid, meaning that the given UUID does refer to a serialized

@@ -1,12 +1,10 @@
 import abc
+from typing import AbstractSet
 
-from six.moves.collections_abc import Set
-
-from smqtk.representation import SmqtkRepresentation
-from smqtk.utils.plugin import Pluggable
+from smqtk_core import Configurable, Pluggable
 
 
-class DataSet (Set, SmqtkRepresentation, Pluggable):
+class DataSet (AbstractSet, Configurable, Pluggable):
     """
     Abstract interface for data sets, that contain an arbitrary number of
     ``DataElement`` instances of arbitrary implementation type, keyed on
