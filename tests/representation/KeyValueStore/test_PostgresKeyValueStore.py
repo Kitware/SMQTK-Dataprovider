@@ -4,9 +4,9 @@ import unittest
 
 import pytest
 
-from smqtk.exceptions import ReadOnlyError
-from smqtk.representation.key_value.postgres import PostgresKeyValueStore
-from smqtk.utils.configuration import configuration_test_helper
+from smqtk_core.configuration import configuration_test_helper
+from smqtk_dataprovider.exceptions import ReadOnlyError
+from smqtk_dataprovider.impls.key_value_store.postgres import PostgresKeyValueStore
 
 
 @pytest.mark.skipif(not PostgresKeyValueStore.is_usable(),
@@ -38,7 +38,7 @@ class TestPostgresKeyValueStore (unittest.TestCase):
 
     # noinspection PyUnusedLocal
     # - purposefully not used mock objects
-    @mock.patch('smqtk.utils.postgres.get_connection_pool')
+    @mock.patch('smqtk_dataprovider.utils.postgres.get_connection_pool')
     def test_remove_readonly(self, m_gcp):
         """ Test that we cannot remove from readonly instance. """
         s = PostgresKeyValueStore(read_only=True)
@@ -50,7 +50,7 @@ class TestPostgresKeyValueStore (unittest.TestCase):
 
     # noinspection PyUnusedLocal
     # - purposefully not used mock objects
-    @mock.patch('smqtk.utils.postgres.get_connection_pool')
+    @mock.patch('smqtk_dataprovider.utils.postgres.get_connection_pool')
     def test_remove_invalid_key(self, m_gcp):
         """
         Simulate a missing key and that it should result in a thrown
@@ -68,7 +68,7 @@ class TestPostgresKeyValueStore (unittest.TestCase):
 
     # noinspection PyUnusedLocal
     # - purposefully not used mock objects
-    @mock.patch('smqtk.utils.postgres.get_connection_pool')
+    @mock.patch('smqtk_dataprovider.utils.postgres.get_connection_pool')
     def test_remove(self, m_gcp):
         """
         Simulate removing a value from the store. Checking executions on
@@ -105,7 +105,7 @@ class TestPostgresKeyValueStore (unittest.TestCase):
 
     # noinspection PyUnusedLocal
     # - purposefully not used mock objects
-    @mock.patch('smqtk.utils.postgres.get_connection_pool')
+    @mock.patch('smqtk_dataprovider.utils.postgres.get_connection_pool')
     def test_remove_many_readonly(self, m_gcp):
         """
         Test failure to remove from a readonly instance.
@@ -118,7 +118,7 @@ class TestPostgresKeyValueStore (unittest.TestCase):
 
     # noinspection PyUnusedLocal
     # - purposefully not used mock objects
-    @mock.patch('smqtk.utils.postgres.get_connection_pool')
+    @mock.patch('smqtk_dataprovider.utils.postgres.get_connection_pool')
     def test_remove_many_invalid_keys(self, m_gcp):
         """
         Test failure when one or more provided keys are not present in
@@ -147,9 +147,9 @@ class TestPostgresKeyValueStore (unittest.TestCase):
 
     # noinspection PyUnusedLocal
     # - purposefully not used mock objects
-    @mock.patch('smqtk.utils.postgres.get_connection_pool')
+    @mock.patch('smqtk_dataprovider.utils.postgres.get_connection_pool')
     # The underlying psycopg2 function used in callback provided to helper.
-    @mock.patch('smqtk.representation.key_value.postgres.psycopg2.extras'
+    @mock.patch('smqtk_dataprovider.impls.key_value_store.postgres.psycopg2.extras'
                 '.execute_batch')
     def test_remove_many(self, m_psqlExecBatch, m_gcp):
         """
@@ -166,7 +166,7 @@ class TestPostgresKeyValueStore (unittest.TestCase):
 
         # Mock PSQL cursor stuff because we aren't actually connecting to a
         # database.
-        # - `get_psql_connection` uses `smqtk.utils.postgres.
+        # - `get_psql_connection` uses `smqtk_dataprovider.utils.postgres.
         #   get_connection_pool`, so the return is a mock object.
         # - Cursor is created via a context (i.e. __enter__()) when
         #   utilized in `PsqlConnectionHelper` execute methods.

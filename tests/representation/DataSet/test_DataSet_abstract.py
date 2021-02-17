@@ -1,8 +1,7 @@
-from __future__ import division, print_function
-import unittest.mock as mock
 import unittest
+import unittest.mock as mock
 
-from smqtk.representation import DataSet
+from smqtk_dataprovider import DataSet
 
 
 class DummyDataSet (DataSet):

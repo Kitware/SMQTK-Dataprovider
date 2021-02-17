@@ -2,12 +2,10 @@ import unittest
 
 import six
 
-from smqtk.representation.data_element.memory_element \
-    import DataMemoryElement
-from smqtk.representation.data_set.kvstore_backed \
-    import KVSDataSet, DFLT_KVSTORE
-from smqtk.representation.key_value.memory import MemoryKeyValueStore
-from smqtk.utils.configuration import configuration_test_helper
+from smqtk_core.configuration import configuration_test_helper
+from smqtk_dataprovider.impls.data_element.memory import DataMemoryElement
+from smqtk_dataprovider.impls.data_set.kvstore_backed import KVSDataSet, DFLT_KVSTORE
+from smqtk_dataprovider.impls.key_value_store.memory import MemoryKeyValueStore
 
 
 class TestKeyValueDataSet (unittest.TestCase):
@@ -28,7 +26,7 @@ class TestKeyValueDataSet (unittest.TestCase):
     def test_get_default_config(self):
         # Default config should use a cache-less in-memory kvstore
         dflt = KVSDataSet.get_default_config()
-        mkvs_key = "smqtk.representation.key_value.memory.MemoryKeyValueStore"
+        mkvs_key = "smqtk_dataprovider.impls.key_value_store.memory.MemoryKeyValueStore"
         self.assertIn('kvstore', dflt)
         self.assertEqual(dflt['kvstore']['type'], mkvs_key)
         # in-memory impl configuration should be the same as the default.

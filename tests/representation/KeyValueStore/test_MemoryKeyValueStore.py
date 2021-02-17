@@ -1,15 +1,13 @@
+import pickle
 import unittest
-
 import unittest.mock as mock
-import six
-from six.moves import cPickle as pickle
 
-from smqtk.exceptions import ReadOnlyError
-from smqtk.representation.data_element.memory_element import (
+from smqtk_dataprovider.exceptions import ReadOnlyError
+from smqtk_dataprovider.impls.data_element.memory import (
     BYTES_CONFIG_ENCODING,
     DataMemoryElement,
 )
-from smqtk.representation.key_value.memory import MemoryKeyValueStore
+from smqtk_dataprovider.impls.key_value_store.memory import MemoryKeyValueStore
 
 
 class TestMemoryKeyValueStore (unittest.TestCase):
@@ -58,7 +56,7 @@ class TestMemoryKeyValueStore (unittest.TestCase):
             pickle.dumps(expected_table).decode(BYTES_CONFIG_ENCODING)
 
         # Test construction with memory data element.
-        dme_key = 'smqtk.representation.data_element.memory_element.DataMemoryElement'
+        dme_key = 'smqtk_dataprovider.impls.data_element.memory.DataMemoryElement'
         config = {'cache_element': {
             dme_key: {
                 'bytes': empty_dict_pickle_str,
@@ -154,7 +152,7 @@ class TestMemoryKeyValueStore (unittest.TestCase):
         s = MemoryKeyValueStore()
         s._cache_element = DataMemoryElement(b'someBytes', 'text/plain',
                                              readonly=False)
-        dme_key = 'smqtk.representation.data_element.memory_element.DataMemoryElement'
+        dme_key = 'smqtk_dataprovider.impls.data_element.memory.DataMemoryElement'
         expected_config = {'cache_element': {
             dme_key: {
                 'bytes': 'someBytes',
@@ -321,7 +319,7 @@ class TestMemoryKeyValueStore (unittest.TestCase):
 
         s = MemoryKeyValueStore(c)
         self.assertEqual(s._table, {})
-        self.assertEqual(c.get_bytes(), six.b(""))
+        self.assertEqual(c.get_bytes(), b"")
 
         s.add_many(d)
         self.assertEqual(s._table, d)

@@ -4,7 +4,7 @@ stages:
 # Global default parameters set for all jobs unless overridden by job-specific
 # configuration.
 default:
-  image: python:3.6-buster
+  image: python:3.9-buster
   interruptible: true
 
 # Global default variables set for all jobs unless overridden by job-specific
@@ -31,20 +31,17 @@ variables:
   - apt-get -y update
   - python --version
   - pip install -U pip
-  - pip install --use-feature=2020-resolver
-                -r requirements.txt
+  - pip install -r requirements.txt
                 -e .
+
+.pytest_cmd: &pytest_cmd
+  - pytest --cov=smqtk_dataprovider --cov-config=.pytest.coveragerc
 
 
 ###############################################################################
 # Jobs
 
-#build:
-#  stage: build
-#  script:
-#    - echo "Placeholder for any build operations required."
-
-test:build_docs:
+test:docs_build:
   extends: .test_job_defaults
   script:
     - *test_setup  # expand `&test_setup` anchor above into here.
@@ -52,25 +49,28 @@ test:build_docs:
     - make html
     - stat _build/html/index.html
 
-test:py36:
+test:unittests:
   extends: .test_job_defaults
+  parallel:
+    matrix:
+      - IMAGE: ["python:3.6-buster",
+                "python:3.7-buster",
+                "python:3.8-buster",
+                "python:3.9-buster"]
+        OPT_REQ: ["",
+                  "opt-girder.txt",
+                  "opt-psql.txt",
+                  "opt-mimetype-magic.txt"]
+  image: $IMAGE
   script:
     - *test_setup  # expand `&test_setup` anchor above into here.
-    - pytest --cov=smqtk --cov-config=.pytest.coveragerc
-
-test:py37:
-  extends: .test_job_defaults
-  image: python:3.7-buster
-  script:
-    - *test_setup  # expand `&test_setup` anchor above into here.
-    - pytest --cov=smqtk --cov-config=.pytest.coveragerc
-
-test:py38:
-  extends: .test_job_defaults
-  image: python:3.8-buster
-  script:
-    - *test_setup  # expand `&test_setup` anchor above into here.
-    - pytest --cov=smqtk --cov-config=.pytest.coveragerc
+    - |
+      REQ_FILE="requirements/$OPT_REQ"
+      if [[ -f "$REQ_FILE" ]]
+      then
+        pip install -r requirements/"$OPT_REQ"
+      fi
+    - *pytest_cmd
 
 test:lint:
   extends: .test_job_defaults
@@ -87,7 +87,10 @@ test:typecheck:
 test:added_a_change_note:
   extends: .test_job_defaults
   script:
+    - git remote -v
+    - git branch -a
     - TARGET=origin/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME
+    - echo "TARGET = $TARGET"
     - |
       FOUND=$(git diff --name-status --diff-filter=d ${TARGET} HEAD | grep "^\w\s*docs/release_notes/pending" || echo "")
       if [[ "$FOUND" = "" ]]

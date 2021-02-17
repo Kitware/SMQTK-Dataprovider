@@ -2,7 +2,7 @@ import unittest
 
 import pytest
 
-from smqtk.utils.postgres import psycopg2, PsqlConnectionHelper
+from smqtk_dataprovider.utils.postgres import psycopg2, PsqlConnectionHelper
 
 
 @pytest.mark.skipif(psycopg2 is None,

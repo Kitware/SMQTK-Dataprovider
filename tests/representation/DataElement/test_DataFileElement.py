@@ -1,14 +1,11 @@
-from __future__ import print_function
-import six
-
-import unittest.mock as mock
 import os
 import unittest
+import unittest.mock as mock
 
-from smqtk.exceptions import InvalidUriError, ReadOnlyError
-from smqtk.representation.data_element import from_uri
-from smqtk.representation.data_element.file_element import DataFileElement
-from smqtk.utils.configuration import configuration_test_helper
+from smqtk_core.configuration import configuration_test_helper
+from smqtk_dataprovider import from_uri
+from smqtk_dataprovider.exceptions import InvalidUriError, ReadOnlyError
+from smqtk_dataprovider.impls.data_element.file import DataFileElement
 
 from tests import TEST_DATA_DIR
 
@@ -35,7 +32,7 @@ class TestDataFileElement (unittest.TestCase):
         d = DataFileElement('foo.txt', explicit_mimetype=ex_type)
         self.assertEqual(d.content_type(), ex_type)
 
-    @mock.patch('smqtk.representation.data_element.DataElement.write_temp')
+    @mock.patch('smqtk_dataprovider.interfaces.data_element.DataElement.write_temp')
     def test_writeTempOverride(self, mock_DataElement_wt):
         # no manual directory, should return the base filepath
         expected_filepath = '/path/to/file.txt'
@@ -45,7 +42,7 @@ class TestDataFileElement (unittest.TestCase):
         self.assertFalse(mock_DataElement_wt.called)
         self.assertEqual(expected_filepath, fp)
 
-    @mock.patch('smqtk.representation.data_element.DataElement.write_temp')
+    @mock.patch('smqtk_dataprovider.interfaces.data_element.DataElement.write_temp')
     def test_writeTempOverride_sameDir(self, mock_DataElement_wt):
         expected_filepath = '/path/to/file.txt'
         target_dir = '/path/to'
@@ -56,7 +53,7 @@ class TestDataFileElement (unittest.TestCase):
         self.assertFalse(mock_DataElement_wt.called)
         self.assertEqual(fp, expected_filepath)
 
-    @mock.patch('smqtk.representation.data_element.DataElement.write_temp')
+    @mock.patch('smqtk_dataprovider.interfaces.data_element.DataElement.write_temp')
     def test_writeTempOverride_diffDir(self, mock_DataElement_wt):
         """
         Test that adding ``temp_dir`` parameter triggers call to parent class
@@ -166,12 +163,12 @@ class TestDataFileElement (unittest.TestCase):
         e = DataFileElement.from_uri(test_file_path)
         self.assertIsInstance(e, DataFileElement)
         self.assertEqual(e._filepath, test_file_path)
-        self.assertEqual(e.get_bytes(), six.b(''))
+        self.assertEqual(e.get_bytes(), b"")
 
         e = DataFileElement.from_uri('file://' + test_file_path)
         self.assertIsInstance(e, DataFileElement)
         self.assertEqual(e._filepath, test_file_path)
-        self.assertEqual(e.get_bytes(), six.b(''))
+        self.assertEqual(e.get_bytes(), b"")
 
     # noinspection PyUnresolvedReferences
     def test_from_uri_plugin_level(self):
@@ -182,12 +179,12 @@ class TestDataFileElement (unittest.TestCase):
         e = from_uri(test_file_path)
         self.assertIsInstance(e, DataFileElement)
         self.assertEqual(e._filepath, test_file_path)
-        self.assertEqual(e.get_bytes(), six.b(''))
+        self.assertEqual(e.get_bytes(), b"")
 
         e = from_uri('file://' + test_file_path)
         self.assertIsInstance(e, DataFileElement)
         self.assertEqual(e._filepath, test_file_path)
-        self.assertEqual(e.get_bytes(), six.b(''))
+        self.assertEqual(e.get_bytes(), b"")
 
     def test_is_empty_file_not_exists(self):
         e = DataFileElement('/no/exists')
@@ -205,16 +202,16 @@ class TestDataFileElement (unittest.TestCase):
         e = DataFileElement("/not/a/valid/path.txt", readonly=True)
         # We currently expect, in the case where the filepath doesn't exist, to
         # get the same bytes as if the file existed and were empty.
-        self.assertEqual(e.get_bytes(), six.b(""))
+        self.assertEqual(e.get_bytes(), b"")
         # read-only status should have no effect.
         e = DataFileElement("/not/a/valid/path.txt", readonly=True)
-        self.assertEqual(e.get_bytes(), six.b(""))
+        self.assertEqual(e.get_bytes(), b"")
 
     def test_get_bytes(self):
         # Test with a known real file.
         test_file_path = os.path.join(TEST_DATA_DIR, 'text_file')
         e = DataFileElement(test_file_path)
-        self.assertEqual(e.get_bytes(), six.b("Some text content.\n"))
+        self.assertEqual(e.get_bytes(), b"Some text content.\n")
 
     def test_writable_readonly_false(self):
         e = DataFileElement('foo')
@@ -233,12 +230,11 @@ class TestDataFileElement (unittest.TestCase):
         e = DataFileElement('foo', readonly=True)
         self.assertFalse(e.writable())
 
-    @mock.patch('smqtk.representation.data_element.file_element'
-                '.safe_file_write')
+    @mock.patch('smqtk_dataprovider.impls.data_element.file.safe_file_write')
     def test_set_bytes_writable(self, m_sfw):
         # Using a relative filepath
         test_path = 'foo'
-        test_bytes = six.b('test string of bytes')
+        test_bytes = b"test string of bytes"
 
         e = DataFileElement(test_path)
         e.set_bytes(test_bytes)
@@ -251,5 +247,5 @@ class TestDataFileElement (unittest.TestCase):
         self.assertRaises(
             ReadOnlyError,
             e.set_bytes,
-            six.b('some bytes')
+            b"some bytes"
         )
