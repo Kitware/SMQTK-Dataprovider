@@ -22,8 +22,13 @@ variables:
     - docker
     - test
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-      when: on_success
+    # Enable tests when running:
+    #   - a merge-request pipeline.
+    #   - tag builds
+    #   - branch pipelines when the branch pipeline is for the default branch
+    - if: $CI_MERGE_REQUEST_IID
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - when: never  # explicit fail-exclude terminal condition.
 
 # Common setup script lines for test jobs
