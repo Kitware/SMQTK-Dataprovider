@@ -1,12 +1,13 @@
 import abc
-import six
 
 
-@six.add_metaclass(abc.ABCMeta)
-class ContentTypeValidator (object):
+class ContentTypeValidator (metaclass=abc.ABCMeta):
     """
-    Abstract interface for the provision of a method to provide a "valid" set of
-    content types relative to the sub-class' function.
+    Abstract mixin interface for the provision of a method to provide a "valid"
+    set of content types relative to the sub-class' function.
+
+    This is not Pluggable/Configurable as it is intended to not be implemented
+    by itself, but mixed into some other interface.
     """
 
     __slots__ = ()
