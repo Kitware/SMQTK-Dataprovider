@@ -11,3 +11,7 @@ Updates / New Features
 
 Fixes
 -----
+
+Misc.
+
+* Minor fixes to package metadata files.
