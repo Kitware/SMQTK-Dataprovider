@@ -1,4 +1,7 @@
 import abc
+from typing import Optional, Set
+
+from smqtk_dataprovider import DataElement
 
 
 class ContentTypeValidator (metaclass=abc.ABCMeta):
@@ -13,29 +16,31 @@ class ContentTypeValidator (metaclass=abc.ABCMeta):
     __slots__ = ()
 
     @abc.abstractmethod
-    def valid_content_types(self):
+    def valid_content_types(self) -> Set[str]:
         """
         :return: A set valid MIME types that are "valid" within the implementing
             class' context.
-        :rtype: set[str]
         """
 
-    def is_valid_element(self, data_element):
+    def is_valid_element(self, data_element: DataElement) -> bool:
         """
         Check if the given DataElement instance reports a content type that
         matches one of the MIME types reported by ``valid_content_types``.
 
-        :param smqtk.representation.DataElement data_element:
+        :param data_element:
              Data element instance to check.
 
         :return: True if the given element has a valid content type as reported
             by ``valid_content_types``, and False if not.
-        :rtype: bool
         """
         return data_element.content_type() in self.valid_content_types()
 
-    def raise_valid_element(self, data_element, exception_type=ValueError,
-                            message=None):
+    def raise_valid_element(
+        self,
+        data_element: DataElement,
+        exception_type: type = ValueError,
+        message: Optional[str] = None
+    ) -> DataElement:
         """
         Check if the given data element matches a reported valid content type,
         raising the given exception class (``ValueError`` by default) if not.
