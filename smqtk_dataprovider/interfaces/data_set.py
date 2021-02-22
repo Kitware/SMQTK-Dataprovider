@@ -1,10 +1,10 @@
 import abc
-from typing import AbstractSet
+from collections.abc import Set
 
 from smqtk_core import Configurable, Pluggable
 
 
-class DataSet (AbstractSet, Configurable, Pluggable):
+class DataSet (Set, Configurable, Pluggable):
     """
     Abstract interface for data sets, that contain an arbitrary number of
     ``DataElement`` instances of arbitrary implementation type, keyed on
