@@ -2,7 +2,7 @@
 Data abstraction interface for general key-value storage.
 """
 import abc
-from typing import Hashable  # noqa: F401
+from typing import Hashable, Iterator, Dict, Iterable, KeysView, Mapping, Any # noqa: F401
 
 from smqtk_dataprovider.exceptions import ReadOnlyError
 from smqtk_core import Configurable, Pluggable
@@ -24,17 +24,17 @@ class KeyValueStore (Configurable, Pluggable):
     # Mutable storage container is not hashable.
     __hash__ = None  # type: ignore
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self.count()
 
-    def __contains__(self, item):
+    def __contains__(self, item: object) -> bool:
         return self.has(item)
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: object) -> Any:
         return self.get(item)
 
     @abc.abstractmethod
-    def __repr__(self):
+    def __repr__(self) -> str:
         """
         Return representative string for this class.
 
@@ -50,20 +50,20 @@ class KeyValueStore (Configurable, Pluggable):
         return '<' + self.__class__.__name__ + " %s>"
 
     @abc.abstractmethod
-    def count(self):
+    def count(self) -> int:
         """
         :return: The number of key-value relationships in this store.
         :rtype: int | long
         """
 
     @abc.abstractmethod
-    def keys(self):
+    def keys(self) -> KeysView:
         """
         :return: Iterator over keys in this store.
         :rtype: collections.abc.Iterator[Hashable]
         """
 
-    def values(self):
+    def values(self) -> Iterator:
         """
         :return: Iterator over values in this store. Values are not guaranteed
             to be in any particular order.
@@ -73,14 +73,14 @@ class KeyValueStore (Configurable, Pluggable):
             yield self.get(k)
 
     @abc.abstractmethod
-    def is_read_only(self):
+    def is_read_only(self) -> bool:
         """
         :return: True if this instance is read-only and False if it is not.
         :rtype: bool
         """
 
     @abc.abstractmethod
-    def has(self, key):
+    def has(self, key: Hashable) -> bool:
         """
         Check if this store has a value for the given key.
 
@@ -93,7 +93,7 @@ class KeyValueStore (Configurable, Pluggable):
         """
 
     @abc.abstractmethod
-    def add(self, key, value):
+    def add(self, key: Hashable, value: Any) -> "KeyValueStore":
         """
         Add a key-value pair to this store.
 
@@ -115,9 +115,10 @@ class KeyValueStore (Configurable, Pluggable):
         """
         if self.is_read_only():
             raise ReadOnlyError("Cannot add to read-only instance %s." % self)
+        return self
 
     @abc.abstractmethod
-    def add_many(self, d):
+    def add_many(self, d: Mapping[Hashable, object]) -> "KeyValueStore":
         """
         Add multiple key-value pairs at a time into this store as represented
         in the provided dictionary `d`.
@@ -134,9 +135,9 @@ class KeyValueStore (Configurable, Pluggable):
         # Input keys must already be hashable because they're in a dictionary.
         if self.is_read_only():
             raise ReadOnlyError("Cannot add to read-only instance %s." % self)
-
+        return self
     @abc.abstractmethod
-    def remove(self, key):
+    def remove(self, key: Hashable) -> "KeyValueStore":
         """
         Remove a single key-value entry.
 
@@ -154,9 +155,10 @@ class KeyValueStore (Configurable, Pluggable):
         if self.is_read_only():
             raise ReadOnlyError("Cannot remove from read-only instance %s."
                                 % self)
+        return self
 
     @abc.abstractmethod
-    def remove_many(self, keys):
+    def remove_many(self, keys: Iterable[Hashable]) -> "KeyValueStore":
         """
         Remove multiple keys and associated values.
 
@@ -176,9 +178,10 @@ class KeyValueStore (Configurable, Pluggable):
         if self.is_read_only():
             raise ReadOnlyError("Cannot remove from read-only instance %s."
                                 % self)
+        return self
 
     @abc.abstractmethod
-    def get(self, key, default=NO_DEFAULT_VALUE):
+    def get(self, key: Hashable, default: object=NO_DEFAULT_VALUE) -> Any:
         """
         Get the value for the given key.
 
@@ -201,7 +204,8 @@ class KeyValueStore (Configurable, Pluggable):
 
         """
 
-    def get_many(self, keys, default=NO_DEFAULT_VALUE):
+    def get_many(self, keys: Iterable[Hashable], \
+        default: object=NO_DEFAULT_VALUE) -> Iterable[object]:
         """
         Get the values for the given keys.
 
@@ -226,9 +230,10 @@ class KeyValueStore (Configurable, Pluggable):
         """
         for key_ in keys:
             yield self.get(key_, default=default)
+        return self
 
     @abc.abstractmethod
-    def clear(self):
+    def clear(self) -> "KeyValueStore":
         """
         Clear this key-value store.
 
@@ -245,3 +250,4 @@ class KeyValueStore (Configurable, Pluggable):
         if self.is_read_only():
             raise ReadOnlyError("Cannot clear a read-only %s instance."
                                 % self.__class__.__name__)
+        return self

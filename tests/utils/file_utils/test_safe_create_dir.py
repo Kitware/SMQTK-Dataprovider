@@ -5,11 +5,10 @@ import unittest
 
 from smqtk_dataprovider.utils.file import safe_create_dir
 
-
 class TestSafeCreateDir (unittest.TestCase):
 
     @mock.patch('smqtk_dataprovider.utils.file.os.makedirs')
-    def test_noExists(self, mock_os_makedirs):
+    def test_noExists(self, mock_os_makedirs: mock.MagicMock) -> None:
         dir_path = "/some/directory/somewhere"
         p = safe_create_dir(dir_path)
 
@@ -18,7 +17,8 @@ class TestSafeCreateDir (unittest.TestCase):
 
     @mock.patch('smqtk_dataprovider.utils.file.os.path.exists')
     @mock.patch('smqtk_dataprovider.utils.file.os.makedirs')
-    def test_existError_alreadyExists(self, mock_os_makedirs, mock_osp_exists):
+    def test_existError_alreadyExists(self, mock_os_makedirs: mock.MagicMock,
+        mock_osp_exists: mock.MagicMock) -> None:
         mock_os_makedirs.side_effect = OSError(errno.EEXIST,
                                                "Existing directory")
 
@@ -34,7 +34,8 @@ class TestSafeCreateDir (unittest.TestCase):
 
     @mock.patch('smqtk_dataprovider.utils.file.os.path.exists')
     @mock.patch('smqtk_dataprovider.utils.file.os.makedirs')
-    def test_existError_noExist(self, mock_os_makedirs, mock_osp_exists):
+    def test_existError_noExist(self, mock_os_makedirs: mock.MagicMock,
+    mock_osp_exists: mock.MagicMock) -> None:
         mock_os_makedirs.side_effect = OSError(errno.EEXIST,
                                                "Existing directory")
         mock_osp_exists.return_value = False
@@ -47,7 +48,8 @@ class TestSafeCreateDir (unittest.TestCase):
 
     @mock.patch('smqtk_dataprovider.utils.file.os.path.exists')
     @mock.patch('smqtk_dataprovider.utils.file.os.makedirs')
-    def test_otherOsError(self, mock_os_makedirs, mock_osp_exists):
+    def test_otherOsError(self, mock_os_makedirs: mock.MagicMock,
+        mock_osp_exists: mock.MagicMock) -> None:
         mock_os_makedirs.side_effect = OSError(errno.EACCES,
                                                "Permission Denied")
 
@@ -58,7 +60,7 @@ class TestSafeCreateDir (unittest.TestCase):
         self.assertFalse(mock_osp_exists.called)
 
     @mock.patch('smqtk_dataprovider.utils.file.os.makedirs')
-    def test_otherException(self, mock_os_makedirs):
+    def test_otherException(self, mock_os_makedirs: mock.MagicMock) -> None:
         mock_os_makedirs.side_effect = RuntimeError("Some other exception")
 
         dir_path = 'something'

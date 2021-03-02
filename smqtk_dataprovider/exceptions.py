@@ -17,7 +17,7 @@ class InvalidUriError (Exception):
     An invalid URI was provided.
     """
 
-    def __init__(self, uri_value, reason):
+    def __init__(self, uri_value: str, reason: str) -> None:
         super(InvalidUriError, self).__init__(uri_value, reason)
         self.uri = uri_value
         self.reason = reason

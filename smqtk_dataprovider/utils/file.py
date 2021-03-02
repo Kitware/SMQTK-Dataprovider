@@ -2,14 +2,15 @@ import contextlib
 import csv
 import errno
 import os
-import numpy
+import numpy # type: ignore
 import re
 import sys
 import tempfile
 import warnings
+from typing import Iterator, Union, Dict, Optional, Any
 
 
-def safe_create_dir(d):
+def safe_create_dir(d: str) -> str:
     """
     Recursively create the given directory, ignoring the already-exists
     error if thrown.
@@ -35,7 +36,8 @@ def safe_create_dir(d):
 
 # noinspection PyShadowingBuiltins
 @contextlib.contextmanager
-def safe_file_context(path, dir=None, **tempfile_kwargs):
+def safe_file_context(path: str, dir: str=None,
+    **tempfile_kwargs: Any) -> Iterator[object]:
     """
     Yield a file object that may be written to in such a way that the target
     file is never incompletely written due to error or multiple agents
@@ -95,7 +97,8 @@ def safe_file_context(path, dir=None, **tempfile_kwargs):
     os.rename(f.name, path)
 
 
-def safe_file_write(path, b, tmp_dir=None):
+def safe_file_write(path: str, b: Union[str,bytes],
+    tmp_dir: Optional[str]=None) -> None:
     """
     Safely write to a file in such a way that the target file is never
     incompletely written to due to error or multiple agents attempting to
@@ -121,11 +124,12 @@ def safe_file_write(path, b, tmp_dir=None):
     :type tmp_dir: None | str
 
     """
-    with safe_file_context(path, dir=tmp_dir) as f:
+    with safe_file_context(path, dir=tmp_dir) as f: # type: Any
         f.write(b)
 
 
-def make_tempfile(suffix="", prefix="tmp", directory=None, text=False):
+def make_tempfile(suffix: str="", prefix: str="tmp",
+    directory:str=None, text: bool=False) -> str:
     """
     Wrapper for ``tempfile.mkstemp`` that closes/discards the file descriptor
     returned from the method. Arguments/keywords passed are the same as, and
@@ -140,7 +144,8 @@ def make_tempfile(suffix="", prefix="tmp", directory=None, text=False):
     return fp
 
 
-def iter_directory_files(d, recurse=True):
+def iter_directory_files(d: str,
+    recurse: Optional[Union[bool, int]] = True) -> Iterator[str]:
     """
     Iterates through files in the structure under the given directory.
 
@@ -173,7 +178,7 @@ def iter_directory_files(d, recurse=True):
         # else recurse fully
 
 
-def touch(fname):
+def touch(fname: str) -> None:
     """
     Touch a file, creating it if it doesn't exist, setting its updated time to
     now.
@@ -186,7 +191,7 @@ def touch(fname):
         os.utime(fname, None)
 
 
-def exclusive_touch(file_path):
+def exclusive_touch(file_path: str) -> bool:
     """
     Attempt to touch a file. If that file already exists, we return False.
     If the file was touched and created, we return True. Other OSErrors
@@ -211,7 +216,8 @@ def exclusive_touch(file_path):
             raise
 
 
-def iter_svm_file(filepath, width):
+def iter_svm_file(filepath: str,
+    width: int) -> Iterator[numpy.core.multiarray.ndarray]:
     """
     Iterate parsed vectors in a parsed "*.svm" file that encodes a sparce
     matrix, where each line consists of multiple "index:value" pairs in index
@@ -239,7 +245,7 @@ def iter_svm_file(filepath, width):
             yield v
 
 
-def iter_csv_file(filepath):
+def iter_csv_file(filepath: str) -> Iterator[numpy.core.multiarray.ndarray]:
     """
     Iterate parsed vectors in a "*.csv" file that encodes descriptor output
     where each line is a descriptor vector. Multiple lines construct a matrix.
@@ -257,7 +263,7 @@ def iter_csv_file(filepath):
             yield numpy.array(line, dtype=float)
 
 
-def file_mimetype_filemagic(filepath):
+def file_mimetype_filemagic(filepath: str) -> str:
     """
     Determine file mimetype using the file-magic module.
 

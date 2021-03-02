@@ -7,7 +7,7 @@ import mimetypes
 import os
 import os.path as osp
 import tempfile
-from typing import Deque
+from typing import Deque, Optional, Hashable, List, Iterable, Callable, Set, Type
 
 from smqtk_dataprovider.exceptions import InvalidUriError, NoUriResolutionError, \
     ReadOnlyError
@@ -35,7 +35,7 @@ class DataElement (Configurable, Pluggable):
     """
 
     @classmethod
-    def from_uri(cls, uri):
+    def from_uri(cls, uri: str) -> DataElement:
         """
         Construct a new instance based on the given URI.
 
@@ -55,28 +55,28 @@ class DataElement (Configurable, Pluggable):
         """
         raise NoUriResolutionError()
 
-    def __init__(self):
+    def __init__(self) -> None:
         super(DataElement, self).__init__()
-        self._temp_filepath_stack = []
+        self._temp_filepath_stack: List = []
 
     # Because we can't generally guarantee external data immutability.
     __hash__ = None  # type: ignore
 
-    def __del__(self):
+    def __del__(self) -> None:
         self.clean_temp()
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, DataElement) and \
                self.get_bytes() == other.get_bytes()
 
-    def __ne__(self, other):
+    def __ne__(self, other: object) -> bool:
         return not (self == other)
 
     @abc.abstractmethod
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.__class__.__name__
 
-    def _write_new_temp(self, d):
+    def _write_new_temp(self, d: Optional[str]) -> str:
         """
         Actually write our bytes to a new temp file
         Always creates new file.
@@ -100,7 +100,7 @@ class DataElement (Configurable, Pluggable):
             f.write(self.get_bytes())
         return fp
 
-    def _clear_no_exist(self):
+    def _clear_no_exist(self) -> None:
         """
         Clear paths in temp stack that don't exist on the system.
         """
@@ -111,7 +111,7 @@ class DataElement (Configurable, Pluggable):
         for fp in no_exist_paths:
             self._temp_filepath_stack.remove(fp)
 
-    def md5(self):
+    def md5(self) -> str:
         """
         Get the MD5 checksum of this element's binary content.
 
@@ -120,7 +120,7 @@ class DataElement (Configurable, Pluggable):
         """
         return hashlib.md5(self.get_bytes()).hexdigest()
 
-    def sha1(self):
+    def sha1(self) -> str:
         """
         Get the SHA1 checksum of this element's binary content.
 
@@ -129,7 +129,7 @@ class DataElement (Configurable, Pluggable):
         """
         return hashlib.sha1(self.get_bytes()).hexdigest()
 
-    def sha512(self):
+    def sha512(self) -> str:
         """
         Get the SHA512 checksum of this element's binary content.
 
@@ -138,7 +138,7 @@ class DataElement (Configurable, Pluggable):
         """
         return hashlib.sha512(self.get_bytes()).hexdigest()
 
-    def write_temp(self, temp_dir=None):
+    def write_temp(self, temp_dir: Optional[str]=None) -> str:
         """
         Write this data's bytes to a temporary file on disk, returning the path
         to the written file, whose extension is guessed based on this data's
@@ -186,7 +186,7 @@ class DataElement (Configurable, Pluggable):
         # return last written temp file.
         return self._temp_filepath_stack[-1]
 
-    def clean_temp(self):
+    def clean_temp(self) -> None:
         """
         Clean any temporary files created by this element. This does nothing if
         no temporary files have been generated for this element yet.
@@ -197,7 +197,7 @@ class DataElement (Configurable, Pluggable):
                     os.remove(fp)
             self._temp_filepath_stack = []
 
-    def uuid(self):
+    def uuid(self) -> Hashable:
         """
         UUID for this data element.
 
@@ -216,7 +216,7 @@ class DataElement (Configurable, Pluggable):
         # TODO(paul.tunison): Change to SHA512.
         return self.sha1()
 
-    def to_buffered_reader(self):
+    def to_buffered_reader(self) -> io.BytesIO:
         """
         Wrap this element's bytes in a ``io.BufferedReader`` instance for use as
         file-like object for reading.
@@ -230,7 +230,7 @@ class DataElement (Configurable, Pluggable):
         """
         return io.BytesIO(self.get_bytes())
 
-    def is_read_only(self):
+    def is_read_only(self) -> bool:
         """
         :return: If this element can only be read from.
         :rtype: bool
@@ -242,7 +242,7 @@ class DataElement (Configurable, Pluggable):
     #
 
     @abc.abstractmethod
-    def content_type(self):
+    def content_type(self) -> Optional[str]:
         """
         :return: Standard type/subtype string for this data element, or None if
             the content type is unknown.
@@ -250,7 +250,7 @@ class DataElement (Configurable, Pluggable):
         """
 
     @abc.abstractmethod
-    def is_empty(self):
+    def is_empty(self) -> bool:
         """
         Check if this element contains no bytes.
 
@@ -264,21 +264,21 @@ class DataElement (Configurable, Pluggable):
         """
 
     @abc.abstractmethod
-    def get_bytes(self):
+    def get_bytes(self) -> bytes:
         """
         :return: Get the bytes for this data element.
         :rtype: bytes
         """
 
     @abc.abstractmethod
-    def writable(self):
+    def writable(self) -> bool:
         """
         :return: if this instance supports setting bytes.
         :rtype: bool
         """
 
     @abc.abstractmethod
-    def set_bytes(self, b):
+    def set_bytes(self, b: bytes) -> None:
         """
         Set bytes to this data element.
 
@@ -299,7 +299,9 @@ class DataElement (Configurable, Pluggable):
             raise ReadOnlyError("This %s element is read only." % self)
 
 
-def from_uri(uri, impl_generator=DataElement.get_impls):
+def from_uri(uri: str, impl_generator: \
+        Callable[[], Set[Type[DataElement]]]=DataElement.get_impls) \
+        -> DataElement:
     """
     Create a data element instance from available plugin implementations.
 
@@ -344,5 +346,6 @@ def from_uri(uri, impl_generator=DataElement.get_impls):
     if inst is None:
         # TODO: Assume final fallback of FileElement?
         #       Since any string could be a file?
-        raise InvalidUriError(uri, "No available implementation to handle URI.")
+        raise InvalidUriError(uri,
+        "No available implementation to handle URI.")
     return inst

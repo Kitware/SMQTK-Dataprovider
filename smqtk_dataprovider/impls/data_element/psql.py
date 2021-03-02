@@ -27,6 +27,7 @@ from smqtk_dataprovider.utils.postgres import (
     PsqlConnectionHelper,
 )
 
+from typing import Dict, Optional, Union, Hashable
 # Try to import required modules
 try:
     import psycopg2  # type: ignore
@@ -139,18 +140,20 @@ class PostgresDataElement (DataElement):  # lgtm [py/missing-equals]
         """)
 
     @classmethod
-    def is_usable(cls):
+    def is_usable(cls) -> bool:
         if psycopg2 is None:
             LOG.warning("Not usable. Requires the psycopg2 module.")
             return False
         return True
 
-    def __init__(self, element_id, content_type=None,
-                 table_name="psql_data_elements", id_col="id",
-                 sha1_col="sha1", mime_col="mime", byte_col="bytes",
-                 db_name="postgres", db_host="/tmp", db_port=5433, db_user=None,
-                 db_pass=None, read_only=False,
-                 create_table=True):
+    def __init__(self, element_id: Union[str, Hashable],
+                content_type: Optional[str]=None,
+                table_name: str="psql_data_elements", id_col: str="id",
+                sha1_col: str="sha1", mime_col: str="mime",
+                byte_col: str="bytes", db_name:str="postgres",
+                db_host: Optional[str]="/tmp", db_port: Optional[int]=5433,
+                db_user: Optional[str]=None, db_pass: Optional[str]=None,
+                read_only: bool=False, create_table: bool=True) -> None:
         """
         Create a new PostgreSQL-based data element.
 
@@ -251,7 +254,8 @@ class PostgresDataElement (DataElement):  # lgtm [py/missing-equals]
         # only be retrieving one row at a time.
         self._psql_helper = PsqlConnectionHelper(db_name, db_host, db_port,
                                                  db_user, db_pass, 10,
-                                                 GLOBAL_PSQL_TABLE_CREATE_RLOCK)
+                                                 GLOBAL_PSQL_TABLE_CREATE_RLOCK
+                                                )
 
         # Set table creation SQL in helper
         if not self._read_only:
@@ -265,11 +269,11 @@ class PostgresDataElement (DataElement):  # lgtm [py/missing-equals]
                 )
             )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "{:s}[id=\"{:s}\"]" \
             .format(self.__class__.__name__, self._element_id)
 
-    def get_config(self):
+    def get_config(self) -> Dict:
         """
         Return a JSON-compliant dictionary that could be passed to this class's
         ``from_config`` method to produce an instance with identical
@@ -297,7 +301,7 @@ class PostgresDataElement (DataElement):  # lgtm [py/missing-equals]
             "create_table": self._create_table,
         }
 
-    def content_type(self):
+    def content_type(self)-> Optional[str]:
         """
         :return: Standard type/subtype string for this data element, or None if
             the content type is unknown.
@@ -312,7 +316,7 @@ class PostgresDataElement (DataElement):  # lgtm [py/missing-equals]
             id_val=self._element_id
         )
 
-        def cb(cursor):
+        def cb(cursor: psycopg2._psycopg.cursor) -> None:
             """
             :type cursor: psycopg2._psycopg.cursor
             """
@@ -326,7 +330,7 @@ class PostgresDataElement (DataElement):  # lgtm [py/missing-equals]
                                "element ID (there should only be one).")
         return r[0][0]
 
-    def is_empty(self):
+    def is_empty(self) -> bool:
         """
         Check if this element contains no bytes.
 
@@ -347,7 +351,7 @@ class PostgresDataElement (DataElement):  # lgtm [py/missing-equals]
             id_val=self._element_id
         )
 
-        def cb(cursor):
+        def cb(cursor: psycopg2._psycopg.cursor) -> None:
             """
             :type cursor: psycopg2._psycopg.cursor
             """
@@ -370,7 +374,7 @@ class PostgresDataElement (DataElement):  # lgtm [py/missing-equals]
             # Non-zero number of bytes stored.
             return False
 
-    def sha1(self):
+    def sha1(self) -> str:
         """
         Get the SHA1 checksum of this element's binary content.
 
@@ -386,7 +390,7 @@ class PostgresDataElement (DataElement):  # lgtm [py/missing-equals]
             id_val=self._element_id,
         )
 
-        def cb(cursor):
+        def cb(cursor: psycopg2._psycopg.cursor) -> None:
             """
             :type cursor: psycopg2._psycopg.cursor
             """
@@ -398,7 +402,7 @@ class PostgresDataElement (DataElement):  # lgtm [py/missing-equals]
             return self.EMPTY_SHA
         return r[0][0]
 
-    def get_bytes(self):
+    def get_bytes(self) -> bytes:
         """
         :return: Get the bytes for this data element.
         :rtype: bytes
@@ -412,7 +416,7 @@ class PostgresDataElement (DataElement):  # lgtm [py/missing-equals]
             id_val=self._element_id
         )
 
-        def cb(cursor):
+        def cb(cursor: psycopg2._psycopg.cursor) -> None:
             """
             :type cursor: psycopg2._psycopg.cursor
             """
@@ -425,14 +429,14 @@ class PostgresDataElement (DataElement):  # lgtm [py/missing-equals]
         else:
             return bytes(r[0][0])
 
-    def writable(self):
+    def writable(self) -> bool:
         """
         :return: if this instance supports setting bytes.
         :rtype: bool
         """
         return not self._read_only
 
-    def set_bytes(self, b):
+    def set_bytes(self, b: bytes) -> None:
         """
         Set bytes to this data element.
 
@@ -479,7 +483,7 @@ class PostgresDataElement (DataElement):  # lgtm [py/missing-equals]
             byte_val=psycopg2.Binary(b)
         )
 
-        def cb(cursor):
+        def cb(cursor: psycopg2._psycopg.cursor) -> None:
             """
             :type cursor: psycopg2._psycopg.cursor
             """

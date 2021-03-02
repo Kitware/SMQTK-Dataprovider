@@ -5,6 +5,7 @@ from smqtk_core.dict import merge_dict
 from smqtk_dataprovider import DataElement
 from smqtk_dataprovider.exceptions import InvalidUriError, ReadOnlyError
 
+from typing import Dict, Optional
 
 BYTES_CONFIG_ENCODING = 'latin-1'
 
@@ -21,12 +22,13 @@ class DataMemoryElement (DataElement):
                                  .format(B64_PATTERN))
 
     @classmethod
-    def is_usable(cls):
+    def is_usable(cls) -> bool:
         # No dependencies
         return True
 
     @classmethod
-    def from_config(cls, config_dict, merge_default=True):
+    def from_config(cls, config_dict: Dict,
+        merge_default: bool=True) -> "DataMemoryElement":
         """
         Instantiate a new instance of this class given the configuration
         JSON-compliant dictionary encapsulating initialization arguments.
@@ -55,7 +57,7 @@ class DataMemoryElement (DataElement):
                                                          merge_default=False)
 
     @classmethod
-    def from_uri(cls, uri):
+    def from_uri(cls, uri: str) -> DataElement:
         """
         Construct a new instance based on the given URI.
 
@@ -102,7 +104,8 @@ class DataMemoryElement (DataElement):
         raise InvalidUriError(uri, "Did not detect byte format URI")
 
     @classmethod
-    def from_base64(cls, b64_str, content_type=None):
+    def from_base64(cls, b64_str: str,
+        content_type: Optional[str]=None) -> "DataMemoryElement":
         """
         Create new MemoryElement instance based on a given base64 string and
         content type.
@@ -132,7 +135,7 @@ class DataMemoryElement (DataElement):
                                  content_type)
 
     @staticmethod
-    def _assert_is_bytes(v):
+    def _assert_is_bytes(v: Optional[bytes]) -> None:
         """
         Assert that the value passed in is a bytes-line object or None.
 
@@ -149,7 +152,8 @@ class DataMemoryElement (DataElement):
             memoryview(v)
 
     # noinspection PyShadowingBuiltins
-    def __init__(self, bytes=None, content_type=None, readonly=False):
+    def __init__(self, bytes: Optional[bytes]=None,
+        content_type: Optional[str]=None, readonly: bool=False) -> None:
         """
         Create a new DataMemoryElement from a byte string and optional content
         type.
@@ -170,15 +174,15 @@ class DataMemoryElement (DataElement):
         self._content_type = content_type
         self._readonly = bool(readonly)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return super(DataMemoryElement, self).__repr__() + \
                "{len(bytes): %d, content_type: %s, readonly: %s}" \
                % (len(self.get_bytes()), self._content_type, self._readonly)
 
-    def get_config(self):
+    def get_config(self) -> Dict:
         b = self._bytes
         try:
-            b = b.decode(BYTES_CONFIG_ENCODING)
+            b = b.decode(BYTES_CONFIG_ENCODING) # type: ignore
         except AttributeError:
             # if ``b`` is None.
             pass
@@ -188,7 +192,7 @@ class DataMemoryElement (DataElement):
             "readonly": self._readonly,
         }
 
-    def content_type(self):
+    def content_type(self) -> Optional[str]:
         """
         :return: Standard type/subtype string for this data element, or None if
             the content type is unknown.
@@ -196,7 +200,7 @@ class DataMemoryElement (DataElement):
         """
         return self._content_type
 
-    def is_empty(self):
+    def is_empty(self) -> bool:
         """
         Check if this element contains no bytes.
 
@@ -206,21 +210,21 @@ class DataMemoryElement (DataElement):
         """
         return not bool(self._bytes)
 
-    def get_bytes(self):
+    def get_bytes(self) -> bytes:
         """
         :return: Get the byte stream for this data element.
         :rtype: bytes
         """
         return self._bytes or b''
 
-    def writable(self):
+    def writable(self) -> bool:
         """
         :return: if this instance supports setting bytes.
         :rtype: bool
         """
         return not self._readonly
 
-    def set_bytes(self, b):
+    def set_bytes(self, b: bytes) -> None:
         """
         Set bytes to this data element in the form of a string.
 

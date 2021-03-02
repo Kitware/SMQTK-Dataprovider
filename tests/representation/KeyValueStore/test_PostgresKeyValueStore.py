@@ -13,7 +13,7 @@ from smqtk_dataprovider.impls.key_value_store.postgres import PostgresKeyValueSt
                     reason="PostgresKeyValueStore reports as unusable.")
 class TestPostgresKeyValueStore (unittest.TestCase):
 
-    def test_configuraton(self):
+    def test_configuraton(self) -> None:
         """ Test instance standard configuration. """
         inst = PostgresKeyValueStore(
             table_name="data_set0",
@@ -39,7 +39,7 @@ class TestPostgresKeyValueStore (unittest.TestCase):
     # noinspection PyUnusedLocal
     # - purposefully not used mock objects
     @mock.patch('smqtk_dataprovider.utils.postgres.get_connection_pool')
-    def test_remove_readonly(self, m_gcp):
+    def test_remove_readonly(self, m_gcp: mock.MagicMock) -> None:
         """ Test that we cannot remove from readonly instance. """
         s = PostgresKeyValueStore(read_only=True)
 
@@ -51,7 +51,7 @@ class TestPostgresKeyValueStore (unittest.TestCase):
     # noinspection PyUnusedLocal
     # - purposefully not used mock objects
     @mock.patch('smqtk_dataprovider.utils.postgres.get_connection_pool')
-    def test_remove_invalid_key(self, m_gcp):
+    def test_remove_invalid_key(self, m_gcp: mock.MagicMock) -> None:
         """
         Simulate a missing key and that it should result in a thrown
         KeyError
@@ -59,7 +59,7 @@ class TestPostgresKeyValueStore (unittest.TestCase):
         s = PostgresKeyValueStore()
 
         # Pretend this store contains nothing.
-        s.has = mock.Mock(return_value=False)
+        s.has = mock.Mock(return_value=False)  # type: ignore
 
         self.assertRaises(
             KeyError,
@@ -69,7 +69,7 @@ class TestPostgresKeyValueStore (unittest.TestCase):
     # noinspection PyUnusedLocal
     # - purposefully not used mock objects
     @mock.patch('smqtk_dataprovider.utils.postgres.get_connection_pool')
-    def test_remove(self, m_gcp):
+    def test_remove(self, m_gcp: mock.MagicMock) -> None:
         """
         Simulate removing a value from the store. Checking executions on
         the mock cursor.
@@ -81,7 +81,7 @@ class TestPostgresKeyValueStore (unittest.TestCase):
         # Cut out create table calls.
         s = PostgresKeyValueStore(create_table=False)
         # Pretend key exists in index.
-        s.has = mock.Mock(return_value=True)
+        s.has = mock.Mock(return_value=True)  # type: ignore
 
         # Cursor is created via a context (i.e. __enter__()
         #: :type: mock.Mock
@@ -106,7 +106,7 @@ class TestPostgresKeyValueStore (unittest.TestCase):
     # noinspection PyUnusedLocal
     # - purposefully not used mock objects
     @mock.patch('smqtk_dataprovider.utils.postgres.get_connection_pool')
-    def test_remove_many_readonly(self, m_gcp):
+    def test_remove_many_readonly(self, m_gcp: mock.MagicMock) -> None:
         """
         Test failure to remove from a readonly instance.
         """
@@ -119,7 +119,7 @@ class TestPostgresKeyValueStore (unittest.TestCase):
     # noinspection PyUnusedLocal
     # - purposefully not used mock objects
     @mock.patch('smqtk_dataprovider.utils.postgres.get_connection_pool')
-    def test_remove_many_invalid_keys(self, m_gcp):
+    def test_remove_many_invalid_keys(self, m_gcp: mock.MagicMock) -> None:
         """
         Test failure when one or more provided keys are not present in
         store.
@@ -129,7 +129,7 @@ class TestPostgresKeyValueStore (unittest.TestCase):
         # Simulate the batch execute returning nothing.  This simulates no
         # rows being found by the first call to the method when checking
         # for key presence in table.
-        s._check_contained_keys = mock.Mock(return_value={0, 1})
+        s._check_contained_keys = mock.Mock(return_value={0, 1})  # type: ignore
         PY2_SET_KEY_ERROR_RE = r"set\(\[(?:0|1), (?:0|1)\]\)"
         PY3_SET_KEY_ERROR_RE = r"{(?:0|1), (?:0|1)}"
         SET_KEY_ERROR_RE = r'^(?:{}|{})$'.format(PY2_SET_KEY_ERROR_RE,
@@ -138,10 +138,10 @@ class TestPostgresKeyValueStore (unittest.TestCase):
             s.remove_many([0, 1])
 
         # Simulate only one of the keys existing in the table.
-        s._check_contained_keys = mock.Mock(return_value={1})
+        s._check_contained_keys = mock.Mock(return_value={1})  # type: ignore
         with pytest.raises(KeyError, match=r'^1$'):
             s.remove_many([0, 1])
-        s._check_contained_keys = mock.Mock(return_value={0})
+        s._check_contained_keys = mock.Mock(return_value={0})  # type: ignore
         with pytest.raises(KeyError, match=r'^0$'):
             s.remove_many([0, 1])
 
@@ -151,7 +151,8 @@ class TestPostgresKeyValueStore (unittest.TestCase):
     # The underlying psycopg2 function used in callback provided to helper.
     @mock.patch('smqtk_dataprovider.impls.key_value_store.postgres.psycopg2.extras'
                 '.execute_batch')
-    def test_remove_many(self, m_psqlExecBatch, m_gcp):
+    def test_remove_many(self, m_psqlExecBatch: mock.MagicMock,
+        m_gcp: mock.MagicMock) -> None:
         """
         Test expected calls to psql `execute_batch` function when removing
         multiple items.
@@ -176,7 +177,7 @@ class TestPostgresKeyValueStore (unittest.TestCase):
 
         # Mocking `PostgresKeyValueStore` key-check method so as to pretend
         # that the given keys exist in the database
-        s._check_contained_keys = mock.MagicMock(return_value=set())
+        s._check_contained_keys = mock.MagicMock(return_value=set()) # type: ignore
 
         s.remove_many([expected_key_1, expected_key_2])
 

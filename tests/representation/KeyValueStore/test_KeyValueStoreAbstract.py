@@ -1,4 +1,4 @@
-from typing import Iterable
+from typing import Iterable, Union, Dict, Iterator, Any, Hashable, Mapping, KeysView
 import unittest
 import unittest.mock as mock
 
@@ -15,56 +15,58 @@ class DummyKVStore (KeyValueStore):
     # base-class requirements
 
     @classmethod
-    def is_usable(cls):
+    def is_usable(cls) -> bool:
         return True
 
-    def get_config(self):
+    def get_config(self) -> Dict:
         pass
 
     # KVStore abc methods
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return super(DummyKVStore, self).__repr__()
 
-    def count(self):
+    def count(self) -> int:
         return self.TEST_COUNT
 
-    def keys(self):
+    def keys(self) -> KeysView:
         pass
 
-    def is_read_only(self):
+    def is_read_only(self) -> bool:
         return self.TEST_READ_ONLY
 
-    def add(self, key, value):
+    def add(self, key: Union[int, object, str], value: object) \
+        -> "DummyKVStore":
         super(DummyKVStore, self).add(key, value)
         return self
 
-    def add_many(self, d):
+    def add_many(self, d: Mapping[Hashable, object]) -> DummyKVStore:
         super(DummyKVStore, self).add_many(d)
         return self
 
-    def has(self, key):
+    def has(self, key: Union[int, object, str]) -> bool:
         pass
 
-    def get(self, key, default=NO_DEFAULT_VALUE):
+    def get(self, key: Hashable,
+        default: object) -> DummyKVStore:
         pass
 
-    def remove(self, key):
+    def remove(self, key: Union[int, object, str]) -> DummyKVStore:
         super(DummyKVStore, self).remove(key)
         return self
 
-    def remove_many(self, keys):
+    def remove_many(self, keys: Iterable[Hashable]) -> DummyKVStore:
         super(DummyKVStore, self).remove_many(keys)
         return self
 
-    def clear(self):
+    def clear(self) -> DummyKVStore:
         super(DummyKVStore, self).clear()
         return self
 
 
 class TestKeyValueStoreAbstract (unittest.TestCase):
 
-    def test_len(self):
+    def test_len(self) -> None:
         s = DummyKVStore()
 
         s.TEST_COUNT = 0
@@ -73,19 +75,19 @@ class TestKeyValueStoreAbstract (unittest.TestCase):
         s.TEST_COUNT = 23456
         assert len(s) == 23456
 
-    def test_repr(self):
+    def test_repr(self) -> None:
         # Should return expected template string
         expected_repr = "<DummyKVStore %s>"
         actual_repr = repr(DummyKVStore())
         self.assertEqual(actual_repr, expected_repr)
 
     # noinspection PyUnresolvedReferences
-    def test_value_iterator(self):
+    def test_value_iterator(self) -> None:
         expected_keys_values = {1, 5, 2345, 'foo'}
 
         s = DummyKVStore()
-        s.keys = mock.MagicMock(return_value=expected_keys_values)
-        s.get = mock.MagicMock(side_effect=lambda v: v)
+        s.keys = mock.MagicMock(return_value=expected_keys_values) # type: ignore
+        s.get = mock.MagicMock(side_effect=lambda v: v) # type: ignore
 
         # Make sure keys now returns expected set.
         # noinspection PyTypeChecker
@@ -112,39 +114,37 @@ class TestKeyValueStoreAbstract (unittest.TestCase):
         s.get.assert_any_call('foo')
 
     # noinspection PyUnresolvedReferences
-    def test_contains(self):
+    def test_contains(self) -> None:
         # Test that python ``has`` keyword and __contains__ method calls the
         # ``has`` method correctly.
         s = DummyKVStore()
 
-        s.has = mock.MagicMock(return_value=True)
+        s.has = mock.MagicMock(return_value=True) # type: ignore
         self.assertTrue('some item' in s)
         s.has.assert_called_once_with('some item')
 
-        s.has = mock.MagicMock(return_value=False)
+        s.has = mock.MagicMock(return_value=False) # type: ignore
         self.assertFalse('other item' in s)
         s.has.assert_called_once_with('other item')
 
-    def test_get_item(self):
+    def test_get_item(self) -> None:
         s = DummyKVStore()
-        s.get = mock.Mock(return_value='expected-value')
+        s.get = mock.Mock(return_value='expected-value') # type: ignore
         ev = s['some-key']
         s.get.assert_called_once_with('some-key')
         self.assertEqual(ev, 'expected-value')
 
-    def test_get_many(self):
+    def test_get_many(self) -> None:
         s = DummyKVStore()
         mock_return_values = ['expected-value', 'other-expected-value']
-        s.get = mock.Mock(
-            side_effect=mock_return_values
-        )
+        s.get = mock.Mock(side_effect=mock_return_values) # type: ignore
         ev = list(
             s.get_many(('some-key', 'some-other-key'))
         )
 
         assert ev == mock_return_values
 
-    def test_add_when_read_only(self):
+    def test_add_when_read_only(self) -> None:
         s = DummyKVStore()
         s.TEST_READ_ONLY = True
 
@@ -153,7 +153,7 @@ class TestKeyValueStoreAbstract (unittest.TestCase):
             s.add, 'k', 'v'
         )
 
-    def test_add_when_not_read_only(self):
+    def test_add_when_not_read_only(self) -> None:
         s = DummyKVStore()
         s.TEST_READ_ONLY = False
         s.add('k', 'v')
@@ -164,7 +164,7 @@ class TestKeyValueStoreAbstract (unittest.TestCase):
         # some object instance
         s.add(object(), 'some value')
 
-    def test_add_many_read_only(self):
+    def test_add_many_read_only(self) -> None:
         s = DummyKVStore()
         s.TEST_READ_ONLY = True
         self.assertRaises(
@@ -172,12 +172,12 @@ class TestKeyValueStoreAbstract (unittest.TestCase):
             s.add_many, {0: 1}
         )
 
-    def test_add_many(self):
+    def test_add_many(self) -> None:
         s = DummyKVStore()
         s.TEST_READ_ONLY = False
         s.add_many({0: 1})
 
-    def test_remove_read_only(self):
+    def test_remove_read_only(self) -> None:
         s = DummyKVStore()
         s.TEST_READ_ONLY = True
         self.assertRaises(
@@ -185,12 +185,12 @@ class TestKeyValueStoreAbstract (unittest.TestCase):
             s.remove, 0
         )
 
-    def test_remove(self):
+    def test_remove(self) -> None:
         s = DummyKVStore()
         s.TEST_READ_ONLY = False
         s.remove(0)
 
-    def test_remove_many_read_only(self):
+    def test_remove_many_read_only(self) -> None:
         s = DummyKVStore()
         s.TEST_READ_ONLY = True
         self.assertRaises(
@@ -198,12 +198,12 @@ class TestKeyValueStoreAbstract (unittest.TestCase):
             s.remove_many, [0, 1]
         )
 
-    def test_remove_many(self):
+    def test_remove_many(self) -> None:
         s = DummyKVStore()
         s.TEST_READ_ONLY = False
         s.remove_many([0, 1])
 
-    def test_clear_readonly(self):
+    def test_clear_readonly(self) -> None:
         s = DummyKVStore()
         s.TEST_READ_ONLY = True
         self.assertRaisesRegex(
@@ -212,7 +212,7 @@ class TestKeyValueStoreAbstract (unittest.TestCase):
             s.clear
         )
 
-    def test_clear(self):
+    def test_clear(self) -> None:
         s = DummyKVStore()
         s.TEST_READ_ONLY = False
         s.clear()

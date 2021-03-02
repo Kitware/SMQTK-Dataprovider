@@ -6,6 +6,7 @@ from smqtk_dataprovider.exceptions import InvalidUriError, ReadOnlyError
 from smqtk_dataprovider import DataElement
 from smqtk_dataprovider.utils.file import safe_file_write
 
+from typing import Optional, Dict
 
 STR_NONE_TYPES = (str, type(None))
 
@@ -20,12 +21,12 @@ class DataFileElement (DataElement):
     FILE_URI_RE = re.compile("^(?:file://)?(/?[^/]+(?:/[^/]+)*)$")
 
     @classmethod
-    def is_usable(cls):
+    def is_usable(cls) -> bool:
         # No dependencies
         return True
 
     @classmethod
-    def from_uri(cls, uri):
+    def from_uri(cls, uri: str) -> DataFileElement:
         """
         Construct a new instance based on the given URI.
 
@@ -68,7 +69,8 @@ class DataFileElement (DataElement):
 
         return DataFileElement(path)
 
-    def __init__(self, filepath, readonly=False, explicit_mimetype=None):
+    def __init__(self, filepath: str, readonly: bool=False,
+        explicit_mimetype: Optional[str]=None) -> None:
         """
         Create a new FileElement.
 
@@ -112,12 +114,12 @@ class DataFileElement (DataElement):
         if not self._content_type:
             self._content_type = mimetypes.guess_type(filepath)[0]
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return super(DataFileElement, self).__repr__() + \
             "{filepath: %s, readonly: %s, explicit_mimetype: %s}" \
             % (self._filepath, self._readonly, self._explicit_mimetype)
 
-    def get_config(self):
+    def get_config(self) -> Dict:
         return {
             "filepath": self._filepath,
             "readonly": self._readonly,
@@ -128,7 +130,7 @@ class DataFileElement (DataElement):
     # Implemented abstract methods
     #
 
-    def content_type(self):
+    def content_type(self) -> Optional[str]:
         """
         :return: Standard type/subtype string for this data element, or None if
             the content type is unknown.
@@ -136,7 +138,7 @@ class DataFileElement (DataElement):
         """
         return self._content_type
 
-    def is_empty(self):
+    def is_empty(self) -> bool:
         """
         Check if this element contains no bytes.
 
@@ -149,7 +151,7 @@ class DataFileElement (DataElement):
         return not osp.exists(self._filepath) or \
             osp.getsize(self._filepath) == 0
 
-    def get_bytes(self):
+    def get_bytes(self) -> bytes:
         """
         :return: Get the byte stream for this data element.
         :rtype: bytes
@@ -158,14 +160,14 @@ class DataFileElement (DataElement):
         return (not self.is_empty() and open(self._filepath, 'rb').read()) \
             or b""
 
-    def writable(self):
+    def writable(self) -> bool:
         """
         :return: if this instance supports setting bytes.
         :rtype: bool
         """
         return not self._readonly
 
-    def set_bytes(self, b):
+    def set_bytes(self, b: bytes) -> None:
         """
         Set bytes to this data element in the form of a string.
 
@@ -184,7 +186,7 @@ class DataFileElement (DataElement):
         else:
             raise ReadOnlyError("This file element is read only.")
 
-    def write_temp(self, temp_dir=None):
+    def write_temp(self, temp_dir: Optional[str]=None) -> str:
         """
         Write this data's bytes to a temporary file on disk, returning the path
         to the written file, whose extension is guessed based on this data's

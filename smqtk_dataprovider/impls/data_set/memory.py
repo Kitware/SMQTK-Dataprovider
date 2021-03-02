@@ -12,6 +12,8 @@ from smqtk_dataprovider import DataElement, DataSet
 from smqtk_dataprovider.exceptions import ReadOnlyError
 from smqtk_dataprovider.utils import SimpleTimer
 
+from typing import Set, Dict, Optional, Iterator, Tuple, Hashable
+
 
 LOG = logging.getLogger(__name__)
 
@@ -30,7 +32,7 @@ class DataMemorySet (DataSet):
     """
 
     @classmethod
-    def is_usable(cls):
+    def is_usable(cls) -> bool:
         """
         Check whether this data set implementations is available for use.
 
@@ -44,7 +46,7 @@ class DataMemorySet (DataSet):
         return True
 
     @classmethod
-    def get_default_config(cls):
+    def get_default_config(cls) -> Dict:
         """
         Generate and return a default configuration dictionary for this class.
         This will be primarily used for generating what the configuration
@@ -68,7 +70,7 @@ class DataMemorySet (DataSet):
         return c
 
     @classmethod
-    def from_config(cls, c, merge_default=True):
+    def from_config(cls, c: Dict, merge_default: bool=True) -> DataMemorySet:
         """
         Instantiate a new instance of this class given the configuration
         JSON-compliant dictionary encapsulating initialization arguments.
@@ -99,7 +101,8 @@ class DataMemorySet (DataSet):
 
         return super(DataMemorySet, cls).from_config(c, False)
 
-    def __init__(self, cache_element=None, pickle_protocol=-1):
+    def __init__(self, cache_element: Optional[DataElement]=None,
+        pickle_protocol: int=-1):
         """
         Initialize a new in-memory data set instance.
 
@@ -135,7 +138,7 @@ class DataMemorySet (DataSet):
 
         self.pickle_protocol = pickle_protocol
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[DataElement]:
         """
         :return: Generator over the DataElements contained in this set in no
             particular order.
@@ -147,7 +150,7 @@ class DataMemorySet (DataSet):
             for k in uuids:
                 yield self._element_map[k]
 
-    def cache(self):
+    def cache(self) -> None:
         """
         Cache the current table if a cache has been configured.
         """
@@ -163,7 +166,7 @@ class DataMemorySet (DataSet):
                         pickle.dumps(self._element_map, self.pickle_protocol)
                     )
 
-    def get_config(self):
+    def get_config(self) -> Dict:
         """
         This implementation has no configuration properties.
 
@@ -181,7 +184,7 @@ class DataMemorySet (DataSet):
             )
         return c
 
-    def count(self):
+    def count(self) -> int:
         """
         :return: The number of data elements in this set.
         :rtype: int
@@ -189,7 +192,7 @@ class DataMemorySet (DataSet):
         with self._element_map_lock:
             return len(self._element_map)
 
-    def uuids(self):
+    def uuids(self) -> Set:
         """
         :return: A new set of uuids represented in this data set.
         :rtype: set
@@ -197,7 +200,7 @@ class DataMemorySet (DataSet):
         with self._element_map_lock:
             return set(self._element_map)
 
-    def has_uuid(self, uuid):
+    def has_uuid(self, uuid: Hashable) -> bool:
         """
         Test if the given uuid refers to an element in this data set.
 
@@ -212,7 +215,7 @@ class DataMemorySet (DataSet):
         with self._element_map_lock:
             return uuid in self._element_map
 
-    def add_data(self, *elems):
+    def add_data(self, *elems: DataElement) -> None:
         """
         Add the given data element(s) instance to this data set.
 
@@ -231,7 +234,7 @@ class DataMemorySet (DataSet):
             if added_elements:
                 self.cache()
 
-    def get_data(self, uuid):
+    def get_data(self, uuid: Hashable) -> DataElement:
         """
         Get the data element the given uuid references, or raise an
         exception if the uuid does not reference any element in this set.

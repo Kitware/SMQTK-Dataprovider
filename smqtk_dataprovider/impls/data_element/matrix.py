@@ -1,7 +1,7 @@
 from io import BytesIO
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Dict
 
-import numpy
+import numpy # type: ignore
 
 from smqtk_dataprovider import DataElement
 from smqtk_dataprovider.exceptions import ReadOnlyError
@@ -24,7 +24,7 @@ class MatrixDataElement (DataElement):  # lgtm[py/missing-equals]
     """
 
     @classmethod
-    def is_usable(cls):
+    def is_usable(cls) -> bool:
         """
         Check whether this class is available for use.
 
@@ -45,7 +45,8 @@ class MatrixDataElement (DataElement):  # lgtm[py/missing-equals]
         """
         return True
 
-    def __init__(self, mat=None, readonly=False):
+    def __init__(self, mat: Optional[numpy.ndarray]=None,
+        readonly: bool=False) -> None:
         """
         :param None|collections.abc.Sequence|numpy.ndarray mat:
             Optional matrix to store at construction time.
@@ -61,7 +62,7 @@ class MatrixDataElement (DataElement):  # lgtm[py/missing-equals]
             self._matrix = numpy.asarray(mat)
         self._readonly = bool(readonly)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         shape: Optional[Tuple] = None
         if self._matrix is not None:
             shape = self._matrix.shape
@@ -69,7 +70,7 @@ class MatrixDataElement (DataElement):  # lgtm[py/missing-equals]
             "{{shape: {}}}".format(shape)
 
     @property
-    def matrix(self):
+    def matrix(self) -> Optional[numpy.ndarray]:
         """
         :return: Get the matrix stored in this element. This may be None if
             there is no matrix currently stored in this element (is empty).
@@ -80,7 +81,7 @@ class MatrixDataElement (DataElement):  # lgtm[py/missing-equals]
         return self._matrix
 
     @matrix.setter
-    def matrix(self, m):
+    def matrix(self, m: numpy.ndarray) -> None:
         """
         :param numpy.ndarray m:
             New ndarray instance to set as the contained matrix.
@@ -92,7 +93,7 @@ class MatrixDataElement (DataElement):  # lgtm[py/missing-equals]
             raise ReadOnlyError("This %s element is read only." % self)
         self._matrix = numpy.asarray(m)
 
-    def get_config(self):
+    def get_config(self) -> Dict:
         """
         Return a JSON-compliant dictionary that could be passed to this class's
         ``from_config`` method to produce an instance with identical
@@ -114,7 +115,7 @@ class MatrixDataElement (DataElement):  # lgtm[py/missing-equals]
             'readonly': self._readonly,
         }
 
-    def content_type(self):
+    def content_type(self) -> Optional[str]:
         """
         :return: Standard type/subtype string for this data element, or None if
             the content type is unknown.
@@ -123,7 +124,7 @@ class MatrixDataElement (DataElement):  # lgtm[py/missing-equals]
         # Blob of bytes (numpy save format)
         return 'application/octet-stream'
 
-    def is_empty(self):
+    def is_empty(self) -> bool:
         """
         Check if this element contains no bytes.
 
@@ -137,7 +138,7 @@ class MatrixDataElement (DataElement):  # lgtm[py/missing-equals]
         """
         return self._matrix is None or self._matrix.size == 0
 
-    def get_bytes(self):
+    def get_bytes(self) -> bytes:
         """
         :return: Get the bytes for this data element.
         :rtype: bytes
@@ -150,14 +151,14 @@ class MatrixDataElement (DataElement):  # lgtm[py/missing-equals]
         else:
             return bytes()
 
-    def writable(self):
+    def writable(self) -> bool:
         """
         :return: if this instance supports setting bytes.
         :rtype: bool
         """
         return not self._readonly
 
-    def set_bytes(self, b):
+    def set_bytes(self, b: bytes) -> None:
         """
         Set bytes to this data element.
 

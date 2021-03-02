@@ -12,11 +12,11 @@ from smqtk_dataprovider.impls.key_value_store.memory import MemoryKeyValueStore
 
 class TestMemoryKeyValueStore (unittest.TestCase):
 
-    def test_is_usable(self):
+    def test_is_usable(self) -> None:
         # Should always be usable
         self.assertTrue(MemoryKeyValueStore.is_usable())
 
-    def test_get_default(self):
+    def test_get_default(self) -> None:
         # Check default config
         default_config = MemoryKeyValueStore.get_default_config()
         self.assertIsInstance(default_config, dict)
@@ -26,20 +26,20 @@ class TestMemoryKeyValueStore (unittest.TestCase):
         self.assertIn('type', default_config['cache_element'])
         self.assertIsNone(default_config['cache_element']['type'])
 
-    def test_from_config_empty_config(self):
+    def test_from_config_empty_config(self) -> None:
         # should resort to default parameters
         s = MemoryKeyValueStore.from_config({})
         self.assertIsNone(s._cache_element)
         self.assertEqual(s._table, {})
 
-    def test_from_config_none_value(self):
+    def test_from_config_none_value(self) -> None:
         # When cache_element value is None
         expected_config = {'cache_element': None}
         s = MemoryKeyValueStore.from_config(expected_config)
         self.assertIsNone(s._cache_element)
         self.assertEqual(s._table, {})
 
-    def test_from_config_none_type(self):
+    def test_from_config_none_type(self) -> None:
         # When config map given, but plugin type set to null/None
         config = {'cache_element': {
             'some_type': {'param': None},
@@ -49,7 +49,7 @@ class TestMemoryKeyValueStore (unittest.TestCase):
         self.assertIsNone(s._cache_element)
         self.assertEqual(s._table, {})
 
-    def test_from_config_with_cache_element(self):
+    def test_from_config_with_cache_element(self) -> None:
         # Pickled dictionary with a known entry
         expected_table = {'some_key': 'some_value'}
         empty_dict_pickle_str = \
@@ -67,13 +67,13 @@ class TestMemoryKeyValueStore (unittest.TestCase):
         self.assertIsInstance(s._cache_element, DataMemoryElement)
         self.assertEqual(s._table, expected_table)
 
-    def test_new_no_cache(self):
+    def test_new_no_cache(self) -> None:
         """ Test construction with no cache element. """
         s = MemoryKeyValueStore()
         self.assertIsNone(s._cache_element)
         self.assertEqual(s._table, {})
 
-    def test_new_empty_cache(self):
+    def test_new_empty_cache(self) -> None:
         """
         Test construction with a cache element set with no bytes (empty).
         """
@@ -82,7 +82,7 @@ class TestMemoryKeyValueStore (unittest.TestCase):
         self.assertEqual(s._cache_element, c)
         self.assertEqual(s._table, {})
 
-    def test_new_cached_table(self):
+    def test_new_cached_table(self) -> None:
         """
         Test construction with a cached table.
         """
@@ -99,7 +99,7 @@ class TestMemoryKeyValueStore (unittest.TestCase):
         self.assertEqual(s._cache_element, c)
         self.assertEqual(s._table, expected_table)
 
-    def test_repr_no_cache(self):
+    def test_repr_no_cache(self) -> None:
         """
         Test representational string when no cache is set.
         """
@@ -108,7 +108,7 @@ class TestMemoryKeyValueStore (unittest.TestCase):
         actual_repr = repr(s)
         self.assertEqual(actual_repr, expected_repr)
 
-    def test_repr_simple_cache(self):
+    def test_repr_simple_cache(self) -> None:
         """
         Test representational string when a cache element is set.
         """
@@ -119,7 +119,7 @@ class TestMemoryKeyValueStore (unittest.TestCase):
                         "None, readonly: False}>"
         self.assertEqual(repr(s), expected_repr)
 
-    def test_count(self):
+    def test_count(self) -> None:
         """
         Test that count returns appropriately based on table state.
         """
@@ -133,7 +133,7 @@ class TestMemoryKeyValueStore (unittest.TestCase):
         }
         assert s.count() == 4
 
-    def test_get_config_no_cache_elem(self):
+    def test_get_config_no_cache_elem(self) -> None:
         """
         Test that configuration returned reflects no cache element being set.
         """
@@ -144,7 +144,7 @@ class TestMemoryKeyValueStore (unittest.TestCase):
         self.assertIn('cache_element', c)
         self.assertIsNone(c['cache_element']['type'])
 
-    def test_get_config_mem_cache_elem(self):
+    def test_get_config_mem_cache_elem(self) -> None:
         """
         Test that configuration returned reflects the cache element that is
         set.
@@ -163,14 +163,14 @@ class TestMemoryKeyValueStore (unittest.TestCase):
         }}
         self.assertEqual(s.get_config(), expected_config)
 
-    def test_keys_empty(self):
+    def test_keys_empty(self) -> None:
         """
         Test that no keys are present in a freshly constructed instance.
         """
         s = MemoryKeyValueStore()
         self.assertEqual(list(s.keys()), [])
 
-    def test_keys_with_table(self):
+    def test_keys_with_table(self) -> None:
         """
         Test that keys returned reflect the table state.
         """
@@ -186,31 +186,31 @@ class TestMemoryKeyValueStore (unittest.TestCase):
             {'a', 'c', 'asdfghsdfg', 'r3adf3a#+'}
         )
 
-    def test_read_only_no_cache(self):
+    def test_read_only_no_cache(self) -> None:
         """ Test that read_only is false when there is no cache. """
         s = MemoryKeyValueStore()
         self.assertIsNone(s._cache_element)
         self.assertFalse(s.is_read_only())
 
-    def test_read_only_with_writable_cache(self):
+    def test_read_only_with_writable_cache(self) -> None:
         """ Test that read-only status reflects a non-read-only cache """
         s = MemoryKeyValueStore()
         s._cache_element = DataMemoryElement(readonly=False)
         self.assertFalse(s.is_read_only())
 
-    def test_read_only_with_read_only_cache(self):
+    def test_read_only_with_read_only_cache(self) -> None:
         """ Test that read-only status reflects a read-only cache """
         s = MemoryKeyValueStore()
         s._cache_element = DataMemoryElement(readonly=True)
         self.assertTrue(s.is_read_only())
 
-    def test_has_invalid_key(self):
+    def test_has_invalid_key(self) -> None:
         """ Test that has-key is false for a key not in the table. """
         s = MemoryKeyValueStore()
         self.assertEqual(s._table, {})
         self.assertFalse(s.has('some key'))
 
-    def test_has_key(self):
+    def test_has_key(self) -> None:
         """ Test that has-key returns true for entered keys. """
         s = MemoryKeyValueStore()
         s._table = {
@@ -223,7 +223,7 @@ class TestMemoryKeyValueStore (unittest.TestCase):
         self.assertTrue(s.has(0))
         self.assertFalse(s.has('c'))
 
-    def test_add_invalid_key(self):
+    def test_add_invalid_key(self) -> None:
         """ Test that we cannot add non-hashable keys. """
         s = MemoryKeyValueStore()
 
@@ -233,7 +233,7 @@ class TestMemoryKeyValueStore (unittest.TestCase):
         self.assertRaises(TypeError, s.add, {0: 1}, 0)
         self.assertEqual(s._table, {})
 
-    def test_add_read_only(self):
+    def test_add_read_only(self) -> None:
         """
         Test that we cannot add when read-only (based on cache element).
         """
@@ -242,7 +242,7 @@ class TestMemoryKeyValueStore (unittest.TestCase):
         self.assertRaises(ReadOnlyError, s.add, 'a', 'b')
         self.assertRaises(ReadOnlyError, s.add, 'foo', None)
 
-    def test_add(self):
+    def test_add(self) -> None:
         """ Test that we can add key-value pairs. """
         s = MemoryKeyValueStore()
 
@@ -262,7 +262,7 @@ class TestMemoryKeyValueStore (unittest.TestCase):
             0: 89,
         })
 
-    def test_add_with_caching(self):
+    def test_add_with_caching(self) -> None:
         """
         Test that we can add key-value pairs and they reflect in the cache
         element.
@@ -280,7 +280,7 @@ class TestMemoryKeyValueStore (unittest.TestCase):
             expected_cache_dict
         )
 
-    def test_add_many_readonly(self):
+    def test_add_many_readonly(self) -> None:
         """ Test that we can't add many on a read-only instance. """
         s = MemoryKeyValueStore(DataMemoryElement(readonly=True))
         self.assertRaises(
@@ -288,7 +288,7 @@ class TestMemoryKeyValueStore (unittest.TestCase):
             s.add_many, {0: 1}
         )
 
-    def test_add_many(self):
+    def test_add_many(self) -> None:
         """
         Test that we can add many key-values via a dictionary input.
         """
@@ -306,7 +306,7 @@ class TestMemoryKeyValueStore (unittest.TestCase):
         self.assertIsNone(s._cache_element)
         self.assertEqual(s._table, d)
 
-    def test_add_many_with_caching(self):
+    def test_add_many_with_caching(self) -> None:
         """
         Test that adding many reflects in cache.
         """
@@ -328,7 +328,7 @@ class TestMemoryKeyValueStore (unittest.TestCase):
             d
         )
 
-    def test_remove_readonly(self):
+    def test_remove_readonly(self) -> None:
         """ Test that we cannot remove from a read-only instance. """
         s = MemoryKeyValueStore(DataMemoryElement(readonly=True))
         self.assertRaises(
@@ -336,7 +336,7 @@ class TestMemoryKeyValueStore (unittest.TestCase):
             s.remove, 0
         )
 
-    def test_remove_missing_key(self):
+    def test_remove_missing_key(self) -> None:
         """
         Test that we cannot remove a key not in the store.
         """
@@ -352,7 +352,7 @@ class TestMemoryKeyValueStore (unittest.TestCase):
         # table should remain unchanged.
         self.assertDictEqual(s._table, {0: 1, 'a': 'b'})
 
-    def test_remove_with_cache(self):
+    def test_remove_with_cache(self) -> None:
         """
         Test that removal correctly updates the cache element.
         """
@@ -370,7 +370,7 @@ class TestMemoryKeyValueStore (unittest.TestCase):
         self.assertDictEqual(pickle.loads(c.get_bytes()),
                              {0: 1})
 
-    def test_remove(self):
+    def test_remove(self) -> None:
         """ Test normal removal. """
         s = MemoryKeyValueStore()
         s._table = {
@@ -381,7 +381,7 @@ class TestMemoryKeyValueStore (unittest.TestCase):
         s.remove(0)
         self.assertDictEqual(s._table, {'a': 'b'})
 
-    def test_remove_many_readonly(self):
+    def test_remove_many_readonly(self) -> None:
         """ Test that we cannot remove many from a read-only instance. """
         s = MemoryKeyValueStore(DataMemoryElement(readonly=True))
         self.assertRaises(
@@ -389,7 +389,7 @@ class TestMemoryKeyValueStore (unittest.TestCase):
             s.remove_many, [0]
         )
 
-    def test_remove_many_missing_key(self):
+    def test_remove_many_missing_key(self) -> None:
         """
         Test that we cannot remove keys not present in table and that table
         is not modified on error.
@@ -430,7 +430,7 @@ class TestMemoryKeyValueStore (unittest.TestCase):
             s.remove_many, [7, 8]
         )
 
-    def test_remove_many(self):
+    def test_remove_many(self) -> None:
         """
         Test expected remove_many functionality.
         """
@@ -444,7 +444,7 @@ class TestMemoryKeyValueStore (unittest.TestCase):
         s.remove_many([0, 1])
         self.assertDictEqual(s._table, {2: 2})
 
-    def test_remove_many_with_cache(self):
+    def test_remove_many_with_cache(self) -> None:
         starting_table = {
             0: 0,
             1: 1,
@@ -458,7 +458,7 @@ class TestMemoryKeyValueStore (unittest.TestCase):
 
         self.assertDictEqual(pickle.loads(c.get_bytes()), {1: 1})
 
-    def test_get_invalid_key(self):
+    def test_get_invalid_key(self) -> None:
         """
         Test that trying to get a value from a key not entered yields an
         exception.
@@ -469,7 +469,7 @@ class TestMemoryKeyValueStore (unittest.TestCase):
             s.get, 0
         )
 
-    def test_get_invalid_key_with_default(self):
+    def test_get_invalid_key_with_default(self) -> None:
         """ Test default value return on missing key. """
         s = MemoryKeyValueStore()
         self.assertEqual(
@@ -478,12 +478,12 @@ class TestMemoryKeyValueStore (unittest.TestCase):
         )
         assert s.get(0, ()) == ()
 
-    def test_get_invalid_key_with_default_None(self):
+    def test_get_invalid_key_with_default_None(self) -> None:
         """ Test that passing None as a default returns None appropriately. """
         s = MemoryKeyValueStore()
         self.assertIsNone(s.get(0, None))
 
-    def test_get(self):
+    def test_get(self) -> None:
         """ Test normal get functionality. """
         s = MemoryKeyValueStore()
         s._table['a'] = 'b'
@@ -492,13 +492,13 @@ class TestMemoryKeyValueStore (unittest.TestCase):
         assert s.get('a') == 'b'
         assert s.get(0) == 1
 
-    def test_clear_readonly(self):
+    def test_clear_readonly(self) -> None:
         """ Test trying to clear on a read-only store. """
         table_before_clear = dict(a=1, b=2, c=3)
 
         s = MemoryKeyValueStore()
         s._table = table_before_clear
-        s.is_read_only = mock.MagicMock(return_value=True)
+        s.is_read_only = mock.MagicMock(return_value=True) # type: ignore
 
         self.assertRaises(
             ReadOnlyError,
@@ -506,7 +506,7 @@ class TestMemoryKeyValueStore (unittest.TestCase):
         )
         self.assertEqual(s._table, table_before_clear)
 
-    def test_clear(self):
+    def test_clear(self) -> None:
         """ Test normal clear functionality. """
         table_before_clear = dict(a=1, b=2, c=3)
 

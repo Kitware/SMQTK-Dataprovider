@@ -1,5 +1,5 @@
 from io import BytesIO
-import numpy as np
+import numpy as np # type: ignore
 import pytest
 
 from smqtk_core.configuration import configuration_test_helper
@@ -12,20 +12,20 @@ class TestMatrixDataElement (object):
     Tests for the ``MatrixDataElement`` implementation
     """
 
-    def test_is_usable(self):
+    def test_is_usable(self) -> None:
         """
         Test that implementation is always usable.
         """
         assert MatrixDataElement.is_usable()
 
-    def test_init_no_args(self):
+    def test_init_no_args(self) -> None:
         """
         Test default constructor results in no internal data.
         """
         e = MatrixDataElement()
         assert e._matrix is None
 
-    def test_init_with_sequence(self):
+    def test_init_with_sequence(self) -> None:
         """
         Test that constructor converts given sequence into numpy array.
         """
@@ -34,7 +34,7 @@ class TestMatrixDataElement (object):
         assert isinstance(e._matrix, np.ndarray)
         np.testing.assert_allclose(e._matrix, s)
 
-    def test_init_with_ndarray(self):
+    def test_init_with_ndarray(self) -> None:
         """
         Test that constructor takes ndarray as is without copying.
         """
@@ -49,7 +49,7 @@ class TestMatrixDataElement (object):
         a[:] = (5, 6, 7, 8)
         np.testing.assert_allclose(e._matrix, (5, 6, 7, 8))
 
-    def test_matrix_property_no_data(self):
+    def test_matrix_property_no_data(self) -> None:
         """
         Test that matrix property returns None when internal attribute set to
         None
@@ -57,12 +57,12 @@ class TestMatrixDataElement (object):
         e = MatrixDataElement(None)
         assert e.matrix is None
 
-    def test_matrix_property_with_data(self):
+    def test_matrix_property_with_data(self) -> None:
         e = MatrixDataElement((1, 2, 3, 4))
         assert isinstance(e.matrix, np.ndarray)
         np.testing.assert_allclose(e.matrix, (1, 2, 3, 4))
 
-    def test_matrix_property_set_not_RO(self):
+    def test_matrix_property_set_not_RO(self) -> None:
         """
         Test that we can set the numpy matrix via property.
         """
@@ -71,7 +71,7 @@ class TestMatrixDataElement (object):
         assert isinstance(e._matrix, np.ndarray)
         np.testing.assert_allclose(e._matrix, (5, 6, 7, 8))
 
-    def test_matrix_property_set_RO_exception(self):
+    def test_matrix_property_set_RO_exception(self) -> None:
         """
         Test that setting to the matrix property results in a ReadOnlyError when
         the `readonly` attribute is set.
@@ -81,7 +81,7 @@ class TestMatrixDataElement (object):
             e.matrix = (5, 6, 7, 8)
         np.testing.assert_allclose(e._matrix, (1, 2, 3, 4))
 
-    def test_configuration_no_data(self):
+    def test_configuration_no_data(self) -> None:
         """
         Testing getting the configuration from an instance with no matrix data
         and creating a new instance from that configuration.
@@ -92,11 +92,11 @@ class TestMatrixDataElement (object):
             assert i.is_read_only() is False
 
         inst = MatrixDataElement(readonly=True)
-        for i in configuration_test_helper(inst):  # type: MatrixDataElement
+        for i in configuration_test_helper(inst):  # type: ignore
             assert i.matrix is None
             assert i.is_read_only() is True
 
-    def test_configuration_with_data(self):
+    def test_configuration_with_data(self) -> None:
         """
         Testing getting the configuration from an instance with no matrix data
         and creating a new instance from that configuration.
@@ -108,19 +108,19 @@ class TestMatrixDataElement (object):
             assert i.is_read_only() is False
 
         inst = MatrixDataElement((1, 2, 3, 4), readonly=True)
-        for i in configuration_test_helper(inst):  # type: MatrixDataElement
+        for i in configuration_test_helper(inst):  # type: ignore
             assert i.matrix is not None
             np.testing.assert_allclose(i.matrix, (1, 2, 3, 4))
             assert i.is_read_only() is True
 
-    def test_is_empty_None(self):
+    def test_is_empty_None(self) -> None:
         """
         Test that is_empty is True when there is no matrix set.
         """
         e = MatrixDataElement(None)
         assert e.is_empty() is True
 
-    def test_is_empty_zero_size(self):
+    def test_is_empty_zero_size(self) -> None:
         """
         Test that is_empty is True when there is a matrix set but its size is 0.
         """
@@ -128,39 +128,39 @@ class TestMatrixDataElement (object):
         assert isinstance(e._matrix, np.ndarray)
         assert e.is_empty() is True
 
-    def test_is_empty_false(self):
+    def test_is_empty_false(self) -> None:
         """
         Test that is_empty is False when there is valid matrix data set.
         """
         e = MatrixDataElement((1,))
         assert e.is_empty() is False
 
-    def test_get_bytes_None(self):
+    def test_get_bytes_None(self) -> None:
         """
         Test that empty bytes are returned when no matrix is set
         """
         e = MatrixDataElement(None)
         assert e.get_bytes() == b''
 
-    def test_get_bytes_with_data(self):
+    def test_get_bytes_with_data(self) -> None:
         """
         Test that valid bytes are returned when a matrix is set.
         """
         assert MatrixDataElement((1, 2, 3, 4)).get_bytes() != b''
 
-    def test_writable_true(self):
+    def test_writable_true(self) -> None:
         """
         Test that ``writable`` is True when readonly is False
         """
         assert MatrixDataElement(readonly=False).writable() is True
 
-    def test_writable_false(self):
+    def test_writable_false(self) -> None:
         """
         Test that ``writable`` is False when readonly is True.
         """
         assert MatrixDataElement(readonly=True).writable() is False
 
-    def test_set_bytes_None(self):
+    def test_set_bytes_None(self) -> None:
         """
         Test that setting blank bytes sets the matrix data to None.
         """
@@ -169,7 +169,7 @@ class TestMatrixDataElement (object):
         e.set_bytes(b'')
         assert e._matrix is None
 
-    def test_set_bytes_valid_bytes(self):
+    def test_set_bytes_valid_bytes(self) -> None:
         """
         Test that setting valid numpy saved bytes results in expected matrix.
         """

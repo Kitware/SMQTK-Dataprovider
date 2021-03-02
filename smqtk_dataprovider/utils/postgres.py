@@ -1,8 +1,9 @@
 import logging
-from multiprocessing import RLock
-from typing import Dict, Optional, Tuple
+from multiprocessing import RLock, synchronize
+from threading import RLock as rl
+from typing import Dict, Tuple, Optional, Any, Callable, Iterable, Iterator, \
+     Union
 import uuid
-
 
 LOG = logging.getLogger(__name__)
 
@@ -33,7 +34,9 @@ _connection_pools: Dict[
 ] = dict()
 
 
-def get_connection_pool(db_name, db_host, db_port, db_user, db_pass):
+def get_connection_pool(db_name: str, db_host: Optional[str],
+        db_port: Optional[int], db_user: Optional[str],
+        db_pass: Optional[str]) -> ThreadedConnectionPool:
     """
     Get the connection pool instance for a specific address specification.
 
@@ -87,7 +90,7 @@ def get_connection_pool(db_name, db_host, db_port, db_user, db_pass):
     return cp
 
 
-def norm_psql_cmd_string(s):
+def norm_psql_cmd_string(s: str) -> str:
     """
     Simple function to reduce down a multi-line string written for readability
     to a single line.
@@ -107,10 +110,12 @@ class PsqlConnectionHelper:
     Helper class for things that interact with a PostgreSQL database.
     """
 
-    def __init__(self, db_name='postgres', db_host=None, db_port=None,
-                 db_user=None, db_pass=None,
-                 itersize=1000,
-                 table_upsert_lock=GLOBAL_PSQL_TABLE_CREATE_RLOCK):
+    def __init__(self, db_name: str ='postgres', db_host: Optional[str]=None,
+            db_port: Optional[int]=None, db_user: Optional[str]=None,
+            db_pass:Optional[str]=None, itersize: Optional[int]=1000,
+            table_upsert_lock: \
+            Union[synchronize.RLock, rl]=GLOBAL_PSQL_TABLE_CREATE_RLOCK) \
+                -> None:
         """
         Create a new helper instance for a set of database connection
         parameters.
@@ -169,7 +174,7 @@ class PsqlConnectionHelper:
         return self.connection_pool.getconn()
 
     @staticmethod
-    def get_unique_cursor_name():
+    def get_unique_cursor_name() -> str:
         """
         Return a string to use as a cursor name.
 
@@ -183,8 +188,10 @@ class PsqlConnectionHelper:
         ruuid = str(uuid.uuid4()).replace('-', '')
         return "smqtk_postgres_cursor_%s" % ruuid
 
-    def set_table_upsert_sql(self, s):
+    def set_table_upsert_sql(self, s: Optional[str]) -> None:
         """
+        TODO:
+        Not entirely sure why im getting this error here
         SQL optional statement to upsert a table in the database before
         executing statements. If this is not set, table upsertion will not
         occur.
@@ -198,7 +205,7 @@ class PsqlConnectionHelper:
         with self.table_upsert_lock:
             self.table_upsert_sql = s
 
-    def ensure_table(self, cursor):
+    def ensure_table(self, cursor: psycopg2._psycopg.cursor) -> None:
         """
         Execute on a PSQL connection's cursor the set table upsert command if
         set.
@@ -212,8 +219,8 @@ class PsqlConnectionHelper:
                 cursor.execute(self.table_upsert_sql)
                 cursor.connection.commit()
 
-    def single_execute(self, cursor_callback, yield_result_rows=False,
-                       named=False):
+    def single_execute(self, cursor_callback: Any, \
+        yield_result_rows: bool=False, named: bool=False) -> Iterable:
         """
         Perform a single SQL execution in  a new database connection. Handles
         connection/cursor acquisition and release.
@@ -284,8 +291,9 @@ class PsqlConnectionHelper:
             # conn.__exit__ doesn't close connection, just the transaction
             self.connection_pool.putconn(conn)
 
-    def batch_execute(self, iterable, cursor_callback, batch_size,
-                      yield_result_rows=False, named=False):
+    def batch_execute(self, iterable: Iterable, cursor_callback: Any, \
+                 batch_size: Optional[int], yield_result_rows: bool=False, \
+                    named: bool=False) -> Iterator:
         """
         Batch the given iterable into ``batch_size`` chunks, calling the given
         ``cursor_callback`` with each batch.

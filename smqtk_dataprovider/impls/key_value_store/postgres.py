@@ -1,7 +1,7 @@
 import logging
 import multiprocessing
 import pickle
-from typing import Hashable, Set
+from typing import Hashable, Set, Optional, Dict, Iterator, Iterable, Any, List, Mapping, KeysView
 
 from smqtk_dataprovider import KeyValueStore
 from smqtk_dataprovider.interfaces.key_value_store import NO_DEFAULT_VALUE
@@ -71,14 +71,16 @@ class PostgresKeyValueStore (KeyValueStore):
         """)
 
     @classmethod
-    def is_usable(cls):
+    def is_usable(cls) -> bool:
         return psycopg2 is not None
 
-    def __init__(self, table_name="data_set",
-                 key_col='key', value_col='value', db_name='postgres',
-                 db_host=None, db_port=None, db_user=None, db_pass=None,
-                 batch_size=1000, pickle_protocol=-1,
-                 read_only=False, create_table=True):
+    def __init__(self, table_name: str="data_set",
+                key_col: str='key', value_col: str='value',
+                db_name: str='postgres',db_host: Optional[str]=None,
+                db_port: Optional[int]=None, db_user: Optional[str]=None,
+                db_pass: Optional[str]=None, batch_size: Optional[int]=1000,
+                pickle_protocol: int=-1, read_only: bool=False,
+                create_table: bool=True) -> None:
         """
         Initialize a PostgreSQL-backed data set instance.
 
@@ -180,7 +182,7 @@ class PostgresKeyValueStore (KeyValueStore):
             )
 
     @staticmethod
-    def _py_to_bin(k):
+    def _py_to_bin(k: object) -> psycopg2.Binary:
         """
         Convert a python hashable value into psycopg2.Binary via pickle.
 
@@ -196,7 +198,7 @@ class PostgresKeyValueStore (KeyValueStore):
         return psycopg2.Binary(pickle.dumps(k))
 
     @staticmethod
-    def _bin_to_py(b):
+    def _bin_to_py(b: psycopg2.Binary) -> object:
         """
         Un-"translate" psycopg2.Binary value (buffer) to a python type.
 
@@ -211,7 +213,7 @@ class PostgresKeyValueStore (KeyValueStore):
         """
         return pickle.loads(bytes(b))
 
-    def get_config(self):
+    def get_config(self) -> Dict:
         """
         Return a JSON-compliant dictionary that could be passed to this class's
         ``from_config`` method to produce an instance with identical
@@ -242,7 +244,7 @@ class PostgresKeyValueStore (KeyValueStore):
             "create_table": self._create_table,
         }
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """
         Return representative string for this class.
 
@@ -253,7 +255,7 @@ class PostgresKeyValueStore (KeyValueStore):
         return super(PostgresKeyValueStore, self).__repr__() \
             % ("table_name: %s, key_col: %s, value_col: %s, "
                "db_name: %s, db_host: %s, db_port: %s, db_user: %s, "
-               "db_pass: %s, batch_size: %d, pickle_protocol: %d, "
+               "db_pass: %s, batch_size: %s, pickle_protocol: %d, "
                "read_only: %s, create_table: %s"
                % (self._table_name, self._key_col, self._value_col,
                   self._psql_helper.db_name, self._psql_helper.db_host,
@@ -261,12 +263,12 @@ class PostgresKeyValueStore (KeyValueStore):
                   self._psql_helper.db_pass, self._batch_size,
                   self._pickle_protocol, self._read_only, self._create_table))
 
-    def count(self):
+    def count(self) -> int:
         """
         :return: The number of key-value relationships in this store.
         :rtype: int | long
         """
-        def cb(cur):
+        def cb(cur: psycopg2._psycopg.cursor) -> None:
             cur.execute(self.SqlTemplates.SELECT_TMPL.format(
                 query='count(%s)' % self._key_col,
                 table_name=self._table_name,
@@ -275,12 +277,12 @@ class PostgresKeyValueStore (KeyValueStore):
             cb, yield_result_rows=True
         ))[0][0]
 
-    def keys(self):
+    def keys(self) -> KeysView:
         """
         :return: Iterator over keys in this store.
         :rtype: collections.abc.Iterator[collections.abc.Hashable]
         """
-        def cb(cur):
+        def cb(cur: psycopg2._psycopg.cursor) -> None:
             cur.execute(self.SqlTemplates.SELECT_TMPL.format(
                 query=self._key_col,
                 table_name=self._table_name,
@@ -292,13 +294,13 @@ class PostgresKeyValueStore (KeyValueStore):
             # Convert from buffer -> string -> python
             yield self._bin_to_py(r[0])
 
-    def values(self):
+    def values(self) -> Iterator[object]:
         """
         :return: Iterator over values in this store. Values are not guaranteed
             to be in any particular order.
         :rtype: collections.abc.Iterator[object]
         """
-        def cb(cur):
+        def cb(cur: psycopg2._psycopg.cursor) -> None:
             cur.execute(self.SqlTemplates.SELECT_TMPL.format(
                 query=self._value_col,
                 table_name=self._table_name,
@@ -308,14 +310,14 @@ class PostgresKeyValueStore (KeyValueStore):
             # Convert from buffer -> string -> python
             yield self._bin_to_py(r[0])
 
-    def is_read_only(self):
+    def is_read_only(self) -> bool:
         """
         :return: True if this instance is read-only and False if it is not.
         :rtype: bool
         """
         return self._read_only
 
-    def has(self, key):
+    def has(self, key: Hashable) -> bool:
         """
         Check if this store has a value for the given key.
 
@@ -336,13 +338,13 @@ class PostgresKeyValueStore (KeyValueStore):
             key_col=self._key_col,
         )
 
-        def cb(cur):
+        def cb(cur: psycopg2._psycopg.cursor) -> None:
             cur.execute(q, {'key_like': self._py_to_bin(key)})
         return bool(list(self._psql_helper.single_execute(
             cb, yield_result_rows=True
         )))
 
-    def add(self, key, value):
+    def add(self, key: Hashable, value: object) -> PostgresKeyValueStore:
         """
         Add a key-value pair to this store.
 
@@ -370,13 +372,13 @@ class PostgresKeyValueStore (KeyValueStore):
             'val': self._py_to_bin(value),
         }
 
-        def cb(cur):
+        def cb(cur: psycopg2._psycopg.cursor) -> None:
             cur.execute(q, v)
 
         list(self._psql_helper.single_execute(cb))
         return self
 
-    def add_many(self, d):
+    def add_many(self, d: Mapping[Hashable, object]) -> KeyValueStore:
         """
         Add multiple key-value pairs at a time into this store as represented in
         the provided dictionary `d`.
@@ -397,21 +399,21 @@ class PostgresKeyValueStore (KeyValueStore):
         )
 
         # Iterator over transformed inputs into values for statement.
-        def val_iter():
+        def val_iter() -> Iterator:
             for key, val in d.items():
                 yield {
                     'key': self._py_to_bin(key),
                     'val': self._py_to_bin(val)
                 }
 
-        def cb(cur, v_batch):
+        def cb(cur: psycopg2._psycopg.cursor, v_batch: Iterable) -> None:
             psycopg2.extras.execute_batch(cur, q, v_batch,
                                           page_size=self._batch_size)
 
         list(self._psql_helper.batch_execute(val_iter(), cb, self._batch_size))
         return self
 
-    def remove(self, key):
+    def remove(self, key: Hashable) -> KeyValueStore:
         """
         Remove a single key-value entry.
 
@@ -438,13 +440,13 @@ class PostgresKeyValueStore (KeyValueStore):
             key_like=self._py_to_bin(key)
         )
 
-        def cb(cursor):
+        def cb(cursor: psycopg2._psycopg.cursor) -> None:
             cursor.execute(q, v)
 
         list(self._psql_helper.single_execute(cb))
         return self
 
-    def _check_contained_keys(self, keys):
+    def _check_contained_keys(self, keys: Set[Hashable]) -> Set[Hashable]:
         """
         Check if the table contains the following keys.
 
@@ -453,7 +455,7 @@ class PostgresKeyValueStore (KeyValueStore):
         :return: An set of keys NOT present in the table.
         :rtype: set[collections.abc.Hashable]
         """
-        def key_like_iter():
+        def key_like_iter() -> Iterable:
             for k_ in keys:
                 yield self._py_to_bin(k_)
 
@@ -466,7 +468,7 @@ class PostgresKeyValueStore (KeyValueStore):
         # Keys found in table
         matched_keys: Set[Hashable] = set()
 
-        def cb(cursor, batch):
+        def cb(cursor: psycopg2._psycopg.cursor, batch: Iterable) -> None:
             cursor.execute(has_many_q, {'key_tuple': tuple(batch)})
             matched_keys.update(self._bin_to_py(r[0]) for r in cursor)
 
@@ -475,7 +477,7 @@ class PostgresKeyValueStore (KeyValueStore):
 
         return keys - matched_keys
 
-    def remove_many(self, keys):
+    def remove_many(self, keys: Iterable[Hashable]) -> KeyValueStore:
         """
         Remove multiple keys and associated values.
 
@@ -507,7 +509,7 @@ class PostgresKeyValueStore (KeyValueStore):
                 raise KeyError(key_diff)
 
         # Proceed with removal
-        def key_like_iter():
+        def key_like_iter() -> Iterator:
             """ Iterator over query value sets. """
             for k_ in keys:
                 yield self._py_to_bin(k_)
@@ -517,7 +519,8 @@ class PostgresKeyValueStore (KeyValueStore):
             key_col=self._key_col,
         )
 
-        def del_cb(cursor, v_batch):
+        def del_cb(cursor: psycopg2._psycopg.cursor, \
+                v_batch: Iterable) -> None:
             # Execute the query with a list of value dicts.
             psycopg2.extras.execute_batch(cursor, del_q,
                                           [{'key_like': k} for k in v_batch],
@@ -527,7 +530,7 @@ class PostgresKeyValueStore (KeyValueStore):
                                              self._batch_size))
         return self
 
-    def get(self, key, default=NO_DEFAULT_VALUE):
+    def get(self, key: Hashable, default: object=NO_DEFAULT_VALUE) -> object:
         """
         Get the value for the given key.
 
@@ -556,7 +559,7 @@ class PostgresKeyValueStore (KeyValueStore):
         )
         v = {'key_like': self._py_to_bin(key)}
 
-        def cb(cur):
+        def cb(cur: psycopg2._psycopg.cursor) -> None:
             cur.execute(q, v)
 
         rows = list(self._psql_helper.single_execute(
@@ -570,7 +573,8 @@ class PostgresKeyValueStore (KeyValueStore):
                 return default
         return self._bin_to_py(rows[0][0])
 
-    def get_many(self, keys, default=NO_DEFAULT_VALUE):
+    def get_many(self, keys: Iterable[Hashable],
+        default: object=NO_DEFAULT_VALUE) -> Iterable[object]:
         """
         Get the values for the given keys.
 
@@ -603,7 +607,7 @@ class PostgresKeyValueStore (KeyValueStore):
         sql_keys = tuple(self._py_to_bin(key_) for key_ in keys)
         sql_variables = {'key_tuple': sql_keys}
 
-        def postgres_callback(cursor):
+        def postgres_callback(cursor: psycopg2._psycopg.cursor) -> None:
             cursor.execute(sql_command_string, sql_variables)
 
         retrieved_dict = {
@@ -620,7 +624,7 @@ class PostgresKeyValueStore (KeyValueStore):
             for key_ in keys:
                 yield retrieved_dict.get(key_, default)
 
-    def clear(self):
+    def clear(self) -> KeyValueStore:
         """
         Clear this key-value store.
 
@@ -633,7 +637,8 @@ class PostgresKeyValueStore (KeyValueStore):
         """
         q = self.SqlTemplates.DELETE_ALL.format(table_name=self._table_name)
 
-        def cb(cur):
+        def cb(cur: psycopg2._psycopg.cursor) -> None:
             cur.execute(q)
 
         list(self._psql_helper.single_execute(cb))
+        return self
