@@ -15,3 +15,7 @@ Fixes
 Misc.
 
 * Minor fixes to package metadata files.
+
+* Fixed issue with packages specifier in :file:`setup.py` where it was only
+  excluding the top-level ``tests`` module but including the rest. Fixed to
+  only explicitly include the ``smqtk_descriptors`` package and submodules.
