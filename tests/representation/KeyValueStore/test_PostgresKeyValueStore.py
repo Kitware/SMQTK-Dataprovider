@@ -151,8 +151,7 @@ class TestPostgresKeyValueStore (unittest.TestCase):
     # The underlying psycopg2 function used in callback provided to helper.
     @mock.patch('smqtk_dataprovider.impls.key_value_store.postgres.psycopg2.extras'
                 '.execute_batch')
-    def test_remove_many(self, m_psqlExecBatch: mock.MagicMock,
-        m_gcp: mock.MagicMock) -> None:
+    def test_remove_many(self, m_psqlExecBatch: mock.MagicMock, m_gcp: mock.MagicMock) -> None:
         """
         Test expected calls to psql `execute_batch` function when removing
         multiple items.
@@ -177,7 +176,8 @@ class TestPostgresKeyValueStore (unittest.TestCase):
 
         # Mocking `PostgresKeyValueStore` key-check method so as to pretend
         # that the given keys exist in the database
-        s._check_contained_keys = mock.MagicMock(return_value=set()) # type: ignore
+        # noinspection PyTypeHints
+        s._check_contained_keys = mock.MagicMock(return_value=set())  # type: ignore
 
         s.remove_many([expected_key_1, expected_key_2])
 

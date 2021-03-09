@@ -13,12 +13,12 @@ def random_string(length: int) -> str:
 
 class TestDataMemoryElement (unittest.TestCase):
 
-    EXPECTED_BYTES = None # type: bytes
-    EXPECTED_CT = None # type: str
-    VALID_BASE64 = None # type: str
-    INVALID_BASE64 = None # type: str
-    VALID_B64_URI = None # type: str
-    VALID_DATA_URI = None # type: str
+    EXPECTED_BYTES: bytes
+    EXPECTED_CT: str
+    VALID_BASE64: str
+    INVALID_BASE64: str
+    VALID_B64_URI: str
+    VALID_DATA_URI: str
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -38,7 +38,7 @@ class TestDataMemoryElement (unittest.TestCase):
             content_type='text/plain',
             readonly=True,
         )
-        for i in configuration_test_helper(inst):  # type: DataMemoryElement
+        for i in configuration_test_helper(inst):
             assert i._bytes == b'Hello World.'
             assert i._content_type == 'text/plain'
             assert i._readonly is True

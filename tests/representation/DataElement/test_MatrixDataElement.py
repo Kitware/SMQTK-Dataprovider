@@ -1,5 +1,6 @@
 from io import BytesIO
-import numpy as np # type: ignore
+
+import numpy as np
 import pytest
 
 from smqtk_core.configuration import configuration_test_helper
@@ -87,12 +88,12 @@ class TestMatrixDataElement (object):
         and creating a new instance from that configuration.
         """
         inst = MatrixDataElement(readonly=False)
-        for i in configuration_test_helper(inst):  # type: MatrixDataElement
+        for i in configuration_test_helper(inst):
             assert i.matrix is None
             assert i.is_read_only() is False
 
         inst = MatrixDataElement(readonly=True)
-        for i in configuration_test_helper(inst):  # type: ignore
+        for i in configuration_test_helper(inst):
             assert i.matrix is None
             assert i.is_read_only() is True
 
@@ -102,13 +103,13 @@ class TestMatrixDataElement (object):
         and creating a new instance from that configuration.
         """
         inst = MatrixDataElement((1, 2, 3, 4), readonly=False)
-        for i in configuration_test_helper(inst):  # type: MatrixDataElement
+        for i in configuration_test_helper(inst):
             assert i.matrix is not None
             np.testing.assert_allclose(i.matrix, (1, 2, 3, 4))
             assert i.is_read_only() is False
 
         inst = MatrixDataElement((1, 2, 3, 4), readonly=True)
-        for i in configuration_test_helper(inst):  # type: ignore
+        for i in configuration_test_helper(inst):
             assert i.matrix is not None
             np.testing.assert_allclose(i.matrix, (1, 2, 3, 4))
             assert i.is_read_only() is True

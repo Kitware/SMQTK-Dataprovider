@@ -2,7 +2,7 @@
 Data abstraction interface for general key-value storage.
 """
 import abc
-from typing import Hashable, Iterator, Dict, Iterable, KeysView, Mapping, Any # noqa: F401
+from typing import Any, Hashable, Iterable, Iterator, Mapping
 
 from smqtk_dataprovider.exceptions import ReadOnlyError
 from smqtk_core import Configurable, Pluggable
@@ -27,10 +27,10 @@ class KeyValueStore (Configurable, Pluggable):
     def __len__(self) -> int:
         return self.count()
 
-    def __contains__(self, item: object) -> bool:
+    def __contains__(self, item: Any) -> bool:
         return self.has(item)
 
-    def __getitem__(self, item: object) -> Any:
+    def __getitem__(self, item: Any) -> Any:
         return self.get(item)
 
     @abc.abstractmethod
@@ -57,7 +57,7 @@ class KeyValueStore (Configurable, Pluggable):
         """
 
     @abc.abstractmethod
-    def keys(self) -> KeysView:
+    def keys(self) -> Iterator[Hashable]:
         """
         :return: Iterator over keys in this store.
         :rtype: collections.abc.Iterator[Hashable]
@@ -118,7 +118,7 @@ class KeyValueStore (Configurable, Pluggable):
         return self
 
     @abc.abstractmethod
-    def add_many(self, d: Mapping[Hashable, object]) -> "KeyValueStore":
+    def add_many(self, d: Mapping[Hashable, Any]) -> "KeyValueStore":
         """
         Add multiple key-value pairs at a time into this store as represented
         in the provided dictionary `d`.
@@ -136,6 +136,7 @@ class KeyValueStore (Configurable, Pluggable):
         if self.is_read_only():
             raise ReadOnlyError("Cannot add to read-only instance %s." % self)
         return self
+
     @abc.abstractmethod
     def remove(self, key: Hashable) -> "KeyValueStore":
         """
@@ -181,7 +182,7 @@ class KeyValueStore (Configurable, Pluggable):
         return self
 
     @abc.abstractmethod
-    def get(self, key: Hashable, default: object=NO_DEFAULT_VALUE) -> Any:
+    def get(self, key: Hashable, default: Any = NO_DEFAULT_VALUE) -> Any:
         """
         Get the value for the given key.
 
@@ -189,23 +190,17 @@ class KeyValueStore (Configurable, Pluggable):
         ``KeyError`` where appropriate.**
 
         :param key: Key to get the value of.
-        :type key: Hashable
-
         :param default: Optional default value if the given key is not present
             in this store. This may be any value except for the
             ``NO_DEFAULT_VALUE`` constant (custom anonymous class instance).
-        :type default: object
 
         :raises KeyError: The given key is not present in this store and no
             default value given.
 
         :return: Deserialized python object stored for the given key.
-        :rtype: object
-
         """
 
-    def get_many(self, keys: Iterable[Hashable], \
-        default: object=NO_DEFAULT_VALUE) -> Iterable[object]:
+    def get_many(self, keys: Iterable[Hashable], default: Any = NO_DEFAULT_VALUE) -> Iterable[Any]:
         """
         Get the values for the given keys.
 

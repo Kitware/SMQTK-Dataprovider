@@ -7,7 +7,7 @@ import mimetypes
 import os
 import os.path as osp
 import tempfile
-from typing import Deque, Optional, Hashable, List, Iterable, Callable, Set, Type
+from typing import Callable, Deque, Hashable, Iterable, List, Optional, Type
 
 from smqtk_dataprovider.exceptions import InvalidUriError, NoUriResolutionError, \
     ReadOnlyError
@@ -35,7 +35,7 @@ class DataElement (Configurable, Pluggable):
     """
 
     @classmethod
-    def from_uri(cls, uri: str) -> DataElement:
+    def from_uri(cls, uri: str) -> "DataElement":
         """
         Construct a new instance based on the given URI.
 
@@ -44,10 +44,10 @@ class DataElement (Configurable, Pluggable):
         :param uri: URI string to resolve into an element instance
         :type uri: str
 
-        :raises NoUriResolutionError: This element type does not implement URI
-            resolution.
-        :raises smqtk.exceptions.InvalidUriError: This element type could not
-            resolve the provided URI string.
+        :raises NoUriResolutionError:
+            This element type does not implement URI resolution.
+        :raises InvalidUriError:
+            This element type could not resolve the provided URI string.
 
         :return: New element instance of our type.
         :rtype: DataElement
@@ -138,7 +138,7 @@ class DataElement (Configurable, Pluggable):
         """
         return hashlib.sha512(self.get_bytes()).hexdigest()
 
-    def write_temp(self, temp_dir: Optional[str]=None) -> str:
+    def write_temp(self, temp_dir: Optional[str] = None) -> str:
         """
         Write this data's bytes to a temporary file on disk, returning the path
         to the written file, whose extension is guessed based on this data's
@@ -299,9 +299,10 @@ class DataElement (Configurable, Pluggable):
             raise ReadOnlyError("This %s element is read only." % self)
 
 
-def from_uri(uri: str, impl_generator: \
-        Callable[[], Set[Type[DataElement]]]=DataElement.get_impls) \
-        -> DataElement:
+def from_uri(
+    uri: str,
+    impl_generator: Callable[[], Iterable[Type[DataElement]]] = DataElement.get_impls
+) -> DataElement:
     """
     Create a data element instance from available plugin implementations.
 
@@ -346,6 +347,5 @@ def from_uri(uri: str, impl_generator: \
     if inst is None:
         # TODO: Assume final fallback of FileElement?
         #       Since any string could be a file?
-        raise InvalidUriError(uri,
-        "No available implementation to handle URI.")
+        raise InvalidUriError(uri, "No available implementation to handle URI.")
     return inst

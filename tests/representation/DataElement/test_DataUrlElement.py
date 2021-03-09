@@ -1,13 +1,12 @@
 import unittest.mock as mock
 import os
 import requests
+from tests import TEST_DATA_DIR
 import unittest
 
 from smqtk_core.configuration import configuration_test_helper
 from smqtk_dataprovider.exceptions import InvalidUriError, ReadOnlyError
 from smqtk_dataprovider.impls.data_element.url import DataUrlElement
-
-from tests import TEST_DATA_DIR
 
 
 # Check to see if we have an internet connection.
@@ -78,8 +77,7 @@ class TestDataUrlElement (unittest.TestCase):
         inst1 = DataUrlElement.from_config(default_config)
         self.assertEqual(default_config, inst1.get_config())
         self.assertEqual(inst1._url, self.EXAMPLE_URL)
-        self.assertEqual(inst1.get_bytes(), open(self.EXAMPLE_PTH, 'rb').read()
-        )
+        self.assertEqual(inst1.get_bytes(), open(self.EXAMPLE_PTH, 'rb').read())
 
         inst2 = DataUrlElement.from_config(inst1.get_config())
         self.assertEqual(inst1, inst2)
@@ -105,19 +103,19 @@ class TestDataUrlElement (unittest.TestCase):
         )
 
     @mock.patch('smqtk_dataprovider.impls.data_element.url.requests.get')
-    def test_is_empty_zero_bytes(self,
-        _m_requests_get: mock.MagicMock) -> None:
+    def test_is_empty_zero_bytes(self, _m_requests_get: mock.MagicMock) -> None:
         e = DataUrlElement('some-address')
         # simulate no content bytes returned
-        e.get_bytes = mock.MagicMock(return_value='') # type: ignore
+        # noinspection PyTypeHints
+        e.get_bytes = mock.MagicMock(return_value='')  # type: ignore
         self.assertTrue(e.is_empty())
 
     @mock.patch('smqtk_dataprovider.impls.data_element.url.requests.get')
-    def test_is_empty_nonzero_bytes(self,
-        _m_requests_get: mock.MagicMock) -> None:
+    def test_is_empty_nonzero_bytes(self, _m_requests_get: mock.MagicMock) -> None:
         e = DataUrlElement('some-address')
         # simulate some content bytes returned
-        e.get_bytes = mock.MagicMock(return_value='some bytes returned') # type: ignore
+        # noinspection PyTypeHints
+        e.get_bytes = mock.MagicMock(return_value='some bytes returned')  # type: ignore
         self.assertFalse(e.is_empty())
 
     @unittest.skipUnless(internet_available, "Internet not accessible")
@@ -127,8 +125,7 @@ class TestDataUrlElement (unittest.TestCase):
         self.assertEqual(e.content_type(), 'image/png')
 
     @mock.patch('smqtk_dataprovider.impls.data_element.url.requests.get')
-    def test_get_bytes_404_return_code(self,
-        m_requests_get: mock.MagicMock) -> None:
+    def test_get_bytes_404_return_code(self, m_requests_get: mock.MagicMock) -> None:
         e = DataUrlElement('some-address')
 
         sim_rc = 500

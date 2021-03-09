@@ -2,12 +2,13 @@ import contextlib
 import csv
 import errno
 import os
-import numpy # type: ignore
 import re
 import sys
 import tempfile
+from typing import Any, Generator, IO, Iterator, Optional, Union
 import warnings
-from typing import Iterator, Union, Dict, Optional, Any
+
+import numpy
 
 
 def safe_create_dir(d: str) -> str:
@@ -36,8 +37,11 @@ def safe_create_dir(d: str) -> str:
 
 # noinspection PyShadowingBuiltins
 @contextlib.contextmanager
-def safe_file_context(path: str, dir: str=None,
-    **tempfile_kwargs: Any) -> Iterator[object]:
+def safe_file_context(
+    path: str,
+    dir: str = None,
+    **tempfile_kwargs: Any
+) -> Generator[IO, None, None]:
     """
     Yield a file object that may be written to in such a way that the target
     file is never incompletely written due to error or multiple agents
@@ -97,8 +101,11 @@ def safe_file_context(path: str, dir: str=None,
     os.rename(f.name, path)
 
 
-def safe_file_write(path: str, b: Union[str,bytes],
-    tmp_dir: Optional[str]=None) -> None:
+def safe_file_write(
+    path: str,
+    b: Union[str, bytes],
+    tmp_dir: Optional[str] = None
+) -> None:
     """
     Safely write to a file in such a way that the target file is never
     incompletely written to due to error or multiple agents attempting to
@@ -124,12 +131,16 @@ def safe_file_write(path: str, b: Union[str,bytes],
     :type tmp_dir: None | str
 
     """
-    with safe_file_context(path, dir=tmp_dir) as f: # type: Any
+    with safe_file_context(path, dir=tmp_dir) as f:
         f.write(b)
 
 
-def make_tempfile(suffix: str="", prefix: str="tmp",
-    directory:str=None, text: bool=False) -> str:
+def make_tempfile(
+    suffix: str = "",
+    prefix: str = "tmp",
+    directory: str = None,
+    text: bool = False
+) -> str:
     """
     Wrapper for ``tempfile.mkstemp`` that closes/discards the file descriptor
     returned from the method. Arguments/keywords passed are the same as, and
@@ -144,8 +155,7 @@ def make_tempfile(suffix: str="", prefix: str="tmp",
     return fp
 
 
-def iter_directory_files(d: str,
-    recurse: Optional[Union[bool, int]] = True) -> Iterator[str]:
+def iter_directory_files(d: str, recurse: Optional[Union[bool, int]] = True) -> Iterator[str]:
     """
     Iterates through files in the structure under the given directory.
 
@@ -216,21 +226,16 @@ def exclusive_touch(file_path: str) -> bool:
             raise
 
 
-def iter_svm_file(filepath: str,
-    width: int) -> Iterator[numpy.core.multiarray.ndarray]:
+def iter_svm_file(filepath: str, width: int) -> Iterator[numpy.ndarray]:
     """
     Iterate parsed vectors in a parsed "*.svm" file that encodes a sparce
     matrix, where each line consists of multiple "index:value" pairs in index
     order. Multiple lines construct a matrix.
 
     :param filepath: Path to the SVM file encoding an array per line
-    :type filepath: str
     :param width: The known number of columns in the sparse vectors.
-    :param width: int
 
     :return: Generator yielding ndarray vectors
-    :rtype: collections.abc.Iterable[numpy.core.multiarray.ndarray]
-
     """
     idx_val_re = re.compile(r"([0-9]+):([-+]?[0-9]*\.?[0-9]*)")
     with open(filepath, 'r') as infile:
@@ -245,17 +250,14 @@ def iter_svm_file(filepath: str,
             yield v
 
 
-def iter_csv_file(filepath: str) -> Iterator[numpy.core.multiarray.ndarray]:
+def iter_csv_file(filepath: str) -> Iterator[numpy.ndarray]:
     """
     Iterate parsed vectors in a "*.csv" file that encodes descriptor output
     where each line is a descriptor vector. Multiple lines construct a matrix.
 
     :param filepath: Path to the CSV file encoding an array per line.
-    :type filepath: str
 
     :return: Generator yielding ndarray vectors
-    :rtype: collections.abc.Iterable[numpy.core.multiarray.ndarray]
-
     """
     with open(filepath) as f:
         reader = csv.reader(f)

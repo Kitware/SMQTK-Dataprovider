@@ -1,5 +1,6 @@
 import unittest.mock as mock
 import os
+from typing import Tuple
 import unittest
 
 import pytest
@@ -12,7 +13,6 @@ from smqtk_dataprovider.impls.data_element.girder import (
     girder_client  # not None when GirderDataElement is usable.
 )
 
-from typing import Tuple
 from tests import TEST_DATA_DIR
 
 
@@ -28,8 +28,7 @@ except requests.ConnectionError:
     internet_available = False
 
 
-def gen_response(content: mock.MagicMock,
-    status_code: int=200) -> requests.Response:
+def gen_response(content: mock.MagicMock, status_code: int = 200) -> requests.Response:
     resp = requests.Response()
     resp._content = content
     resp.status_code = status_code
@@ -86,8 +85,7 @@ class TestGirderDataElement (unittest.TestCase):
         self.assertEqual(actual_repr, expected_repr)
 
     @mock.patch('girder_client.GirderClient.authenticate')
-    def test_from_config_full_constructor(self,
-        _mock_authenticate: mock.MagicMock) -> None:
+    def test_from_config_full_constructor(self, _mock_authenticate: mock.MagicMock) -> None:
         expected_file_id = '34uhki34gh2345ghjk'
         expected_api_root = 'https://some.other.server/api/v1'
         expected_api_key = '1234ghk135hlg23435'
@@ -156,19 +154,18 @@ class TestGirderDataElement (unittest.TestCase):
         e = GirderDataElement(self.EXAMPLE_ITEM_ID,
                               self.EXAMPLE_GIRDER_API_ROOT)
         m = e.get_file_model()
-        if m is not None:
-            self.assertEqual(m['_id'], expected_m['_id'])
-            self.assertEqual(m['_modelType'], expected_m['_modelType'])
-            self.assertEqual(m['exts'], expected_m['exts'])
-            self.assertEqual(m['mimeType'], expected_m['mimeType'])
-            self.assertEqual(m['name'], expected_m['name'])
-            self.assertEqual(m['sha512'], expected_m['sha512'])
-            self.assertEqual(m['size'], expected_m['size'])
+        assert m is not None
+        self.assertEqual(m['_id'], expected_m['_id'])
+        self.assertEqual(m['_modelType'], expected_m['_modelType'])
+        self.assertEqual(m['exts'], expected_m['exts'])
+        self.assertEqual(m['mimeType'], expected_m['mimeType'])
+        self.assertEqual(m['name'], expected_m['name'])
+        self.assertEqual(m['sha512'], expected_m['sha512'])
+        self.assertEqual(m['size'], expected_m['size'])
 
     @mock.patch('girder_client.GirderClient.getFile')
-    def test_get_file_model_item_no_exists(self,
-        m_getFile: mock.MagicMock) -> None:
-        def raise_http_error(*_: Tuple, **__:Tuple) -> None:
+    def test_get_file_model_item_no_exists(self, m_getFile: mock.MagicMock) -> None:
+        def raise_http_error(*_: Tuple, **__: Tuple) -> None:
             raise girder_client.HttpError(None, None, None, None)
         m_getFile.side_effect = raise_http_error
 
@@ -194,13 +191,15 @@ class TestGirderDataElement (unittest.TestCase):
         e.get_file_model = mock.MagicMock(return_value={'size': 7})  # type: ignore
         self.assertFalse(e.is_empty())
 
-    @mock.patch('smqtk_dataprovider.impls.data_element.girder'
-                    'GirderDataElement.get_file_model')
+    @mock.patch('smqtk_dataprovider.impls.data_element.girder.GirderDataElement.get_file_model')
     @mock.patch('girder_client.GirderClient.getFolder')
     @mock.patch('girder_client.GirderClient.getItem')
-    def test_writable(self, m_getItem: mock.MagicMock,
-        m_getFolder: mock.MagicMock, _m_get_file_model: mock.MagicMock) \
-        -> None:
+    def test_writable(
+        self,
+        m_getItem: mock.MagicMock,
+        m_getFolder: mock.MagicMock,
+        _m_get_file_model: mock.MagicMock
+    ) -> None:
         m_getItem.return_value = {'folderId': 'someFolderId'}
         m_getFolder.return_value = {'_accessLevel': 1}
 

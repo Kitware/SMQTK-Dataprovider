@@ -1,4 +1,4 @@
-from typing import Iterable, Union, Dict, Iterator, Any, Hashable, Mapping, KeysView
+from typing import Any, Dict, Hashable, Iterable, Iterator, Mapping, Union
 import unittest
 import unittest.mock as mock
 
@@ -29,37 +29,35 @@ class DummyKVStore (KeyValueStore):
     def count(self) -> int:
         return self.TEST_COUNT
 
-    def keys(self) -> KeysView:
+    def keys(self) -> Iterator[Hashable]:
         pass
 
     def is_read_only(self) -> bool:
         return self.TEST_READ_ONLY
 
-    def add(self, key: Union[int, object, str], value: object) \
-        -> "DummyKVStore":
+    def add(self, key: Hashable, value: Any) -> "DummyKVStore":
         super(DummyKVStore, self).add(key, value)
         return self
 
-    def add_many(self, d: Mapping[Hashable, object]) -> DummyKVStore:
+    def add_many(self, d: Mapping[Hashable, Any]) -> "DummyKVStore":
         super(DummyKVStore, self).add_many(d)
         return self
 
     def has(self, key: Union[int, object, str]) -> bool:
         pass
 
-    def get(self, key: Hashable,
-        default: object) -> DummyKVStore:
+    def get(self, key: Hashable, default: Any = NO_DEFAULT_VALUE) -> Any:
         pass
 
-    def remove(self, key: Union[int, object, str]) -> DummyKVStore:
+    def remove(self, key: Hashable) -> "DummyKVStore":
         super(DummyKVStore, self).remove(key)
         return self
 
-    def remove_many(self, keys: Iterable[Hashable]) -> DummyKVStore:
+    def remove_many(self, keys: Iterable[Hashable]) -> "DummyKVStore":
         super(DummyKVStore, self).remove_many(keys)
         return self
 
-    def clear(self) -> DummyKVStore:
+    def clear(self) -> "DummyKVStore":
         super(DummyKVStore, self).clear()
         return self
 
@@ -86,8 +84,10 @@ class TestKeyValueStoreAbstract (unittest.TestCase):
         expected_keys_values = {1, 5, 2345, 'foo'}
 
         s = DummyKVStore()
-        s.keys = mock.MagicMock(return_value=expected_keys_values) # type: ignore
-        s.get = mock.MagicMock(side_effect=lambda v: v) # type: ignore
+        # noinspection PyTypeHints
+        s.keys = mock.MagicMock(return_value=expected_keys_values)  # type: ignore
+        # noinspection PyTypeHints
+        s.get = mock.MagicMock(side_effect=lambda v: v)  # type: ignore
 
         # Make sure keys now returns expected set.
         # noinspection PyTypeChecker
@@ -119,17 +119,20 @@ class TestKeyValueStoreAbstract (unittest.TestCase):
         # ``has`` method correctly.
         s = DummyKVStore()
 
-        s.has = mock.MagicMock(return_value=True) # type: ignore
+        # noinspection PyTypeHints
+        s.has = mock.MagicMock(return_value=True)  # type: ignore
         self.assertTrue('some item' in s)
         s.has.assert_called_once_with('some item')
 
-        s.has = mock.MagicMock(return_value=False) # type: ignore
+        # noinspection PyTypeHints
+        s.has = mock.MagicMock(return_value=False)  # type: ignore
         self.assertFalse('other item' in s)
         s.has.assert_called_once_with('other item')
 
     def test_get_item(self) -> None:
         s = DummyKVStore()
-        s.get = mock.Mock(return_value='expected-value') # type: ignore
+        # noinspection PyTypeHints
+        s.get = mock.Mock(return_value='expected-value')  # type: ignore
         ev = s['some-key']
         s.get.assert_called_once_with('some-key')
         self.assertEqual(ev, 'expected-value')
@@ -137,7 +140,8 @@ class TestKeyValueStoreAbstract (unittest.TestCase):
     def test_get_many(self) -> None:
         s = DummyKVStore()
         mock_return_values = ['expected-value', 'other-expected-value']
-        s.get = mock.Mock(side_effect=mock_return_values) # type: ignore
+        # noinspection PyTypeHints
+        s.get = mock.Mock(side_effect=mock_return_values)  # type: ignore
         ev = list(
             s.get_many(('some-key', 'some-other-key'))
         )

@@ -1,3 +1,4 @@
+from typing import Any, Dict
 import unittest.mock as mock
 from unittest import TestCase
 
@@ -8,7 +9,7 @@ from smqtk_dataprovider.impls.data_element.hbase import HBaseDataElement
 
 class TestHBaseDataElement(TestCase):
 
-    DUMMY_CFG = {
+    DUMMY_CFG: Dict[str, Any] = {
         'element_key': 'foobar',
         'binary_column': 'binary_data',
         'hbase_address': 'some_address',
@@ -24,8 +25,10 @@ class TestHBaseDataElement(TestCase):
         e = HBaseDataElement(**self.DUMMY_CFG)
         # Pretend that the implementation is actually available and mock out
         # dependency functionality.
-        e.content_type = mock.MagicMock() # type: ignore
-        e._new_hbase_table_connection = mock.MagicMock() # type: ignore
+        # noinspection PyTypeHints
+        e.content_type = mock.MagicMock()  # type: ignore
+        # noinspection PyTypeHints
+        e._new_hbase_table_connection = mock.MagicMock()  # type: ignore
         e._new_hbase_table_connection().row.return_value = {
             self.DUMMY_CFG['binary_column']: content
         }
@@ -35,7 +38,8 @@ class TestHBaseDataElement(TestCase):
     def setUpClass(cls) -> None:
         # Pretend that the implementation is actually available and mock out
         # dependency functionality.
-        HBaseDataElement.is_usable = mock.MagicMock(return_value=True) # type: ignore
+        # noinspection PyTypeHints
+        HBaseDataElement.is_usable = mock.MagicMock(return_value=True)  # type: ignore
 
     def test_config(self) -> None:
         inst = HBaseDataElement(

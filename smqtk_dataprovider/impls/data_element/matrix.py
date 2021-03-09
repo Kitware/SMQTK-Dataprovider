@@ -1,7 +1,7 @@
 from io import BytesIO
-from typing import Optional, Tuple, Dict
+from typing import Dict, Optional, Tuple
 
-import numpy # type: ignore
+import numpy
 
 from smqtk_dataprovider import DataElement
 from smqtk_dataprovider.exceptions import ReadOnlyError
@@ -45,8 +45,11 @@ class MatrixDataElement (DataElement):  # lgtm[py/missing-equals]
         """
         return True
 
-    def __init__(self, mat: Optional[numpy.ndarray]=None,
-        readonly: bool=False) -> None:
+    def __init__(
+        self,
+        mat: Optional[numpy.ndarray] = None,
+        readonly: bool = False
+    ):
         """
         :param None|collections.abc.Sequence|numpy.ndarray mat:
             Optional matrix to store at construction time.

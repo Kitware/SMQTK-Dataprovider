@@ -6,12 +6,12 @@ import hashlib
 import unittest.mock as mock
 import os.path as osp
 import tempfile
+from typing import Dict
 import unittest
 
 from smqtk_dataprovider import DataElement
 from smqtk_dataprovider.exceptions import NoUriResolutionError, ReadOnlyError
 
-from typing import Dict
 
 # because this has a stable mimetype conversion
 EXPECTED_CONTENT_TYPE = "image/png"
@@ -71,14 +71,14 @@ class TestDataElementAbstract (unittest.TestCase):
             DummyDataElement.from_uri, 'some uri'
         )
 
-    def test_not_hashable(self)-> None:
+    def test_not_hashable(self) -> None:
         # Hash should be that of the UUID of the element
         de = DummyDataElement()
         self.assertRaises(TypeError, hash, de)
 
     def test_del(self) -> None:
         de = DummyDataElement()
-        m_clean_temp = de.clean_temp = mock.Mock() # type: ignore
+        m_clean_temp = de.clean_temp = mock.Mock()  # type: ignore
         del de
 
         self.assertTrue(m_clean_temp.called)
@@ -88,11 +88,11 @@ class TestDataElementAbstract (unittest.TestCase):
         e1 = DummyDataElement()
         e2 = DummyDataElement()
 
-        test_content_1 = bytes('some similar content', 'utf-8')
+        test_content_1 = b'some similar content'
         e1.TEST_BYTES = e2.TEST_BYTES = test_content_1
         self.assertEqual(e1, e2)
 
-        test_content_2 = bytes('some other bytes', 'utf-8')
+        test_content_2 = b'some other bytes'
         e2.TEST_BYTES = test_content_2
         self.assertNotEqual(e1, e2)
 
@@ -116,13 +116,16 @@ class TestDataElementAbstract (unittest.TestCase):
     @mock.patch('os.close')  # global
     @mock.patch('os.open')  # global
     @mock.patch("builtins.open")
-    def test_content_type_extension(self,
-                                    _mock_open: mock.MagicMock,
-                                    _mock_os_open: mock.MagicMock, _mock_os_close: mock.MagicMock,
-                                    _mock_fcntl: mock.MagicMock,
-                                    _mock_scd: mock.MagicMock) -> None:
+    def test_content_type_extension(
+        self,
+        _mock_open: mock.MagicMock,
+        _mock_os_open: mock.MagicMock,
+        _mock_os_close: mock.MagicMock,
+        _mock_fcntl: mock.MagicMock,
+        _mock_scd: mock.MagicMock
+    ) -> None:
         de = DummyDataElement()
-        de.content_type = mock.Mock(return_value=None) # type: ignore
+        de.content_type = mock.Mock(return_value=None)  # type: ignore
         fname = de.write_temp()
         self.assertFalse(fname.endswith('.png'))
 
@@ -224,12 +227,14 @@ class TestDataElementAbstract (unittest.TestCase):
     @mock.patch('os.close')  # global
     @mock.patch('os.open')  # global
     @mock.patch("builtins.open")
-    def test_writeTemp_hasExisting_givenNewDir(self, mock_open: mock.MagicMock,
-                                                _mock_os_open: mock.MagicMock,
-                                                _mock_os_close: mock.MagicMock,
-                                                _mock_fcntl: mock.MagicMock,
-                                                mock_scd: mock.MagicMock) \
-                                                    -> None:
+    def test_writeTemp_hasExisting_givenNewDir(
+        self,
+        mock_open: mock.MagicMock,
+        _mock_os_open: mock.MagicMock,
+        _mock_os_close: mock.MagicMock,
+        _mock_fcntl: mock.MagicMock,
+        mock_scd: mock.MagicMock
+    ) -> None:
         # existing temps, given specific dir
         prev_0 = '/tmp/file.txt'
         prev_1 = '/tmp/file_two.png'
@@ -252,14 +257,15 @@ class TestDataElementAbstract (unittest.TestCase):
     @mock.patch('os.close')  # global
     @mock.patch('os.open')  # global
     @mock.patch("builtins.open")
-    def test_writeTemp_hasExisting_givenExistingDir(self,
-                                                mock_open: mock.MagicMock,
-                                                _mock_os_open: mock.MagicMock,
-                                                _mock_os_close: mock.MagicMock,
-                                                _mock_fcntl: mock.MagicMock,
-                                                mock_scd: mock.MagicMock,
-                                                mock_isfile: mock.MagicMock) \
-                                                -> None:
+    def test_writeTemp_hasExisting_givenExistingDir(
+        self,
+        mock_open: mock.MagicMock,
+        _mock_os_open: mock.MagicMock,
+        _mock_os_close: mock.MagicMock,
+        _mock_fcntl: mock.MagicMock,
+        mock_scd: mock.MagicMock,
+        mock_isfile: mock.MagicMock
+    ) -> None:
         # Pretend these files already exist as written temp files.
         # We test that write_temp with a target directory yields a previously
         #   "written" temp file.
@@ -320,8 +326,7 @@ class TestDataElementAbstract (unittest.TestCase):
         self.assertFalse(mock_os.remove.called)
 
     @mock.patch("smqtk_dataprovider.interfaces.data_element.os")
-    def test_cleanTemp_hasTemp_validPath(self, mock_os: mock.MagicMock) \
-                                            -> None:
+    def test_cleanTemp_hasTemp_validPath(self, mock_os: mock.MagicMock) -> None:
         expected_path = '/tmp/something'
 
         de = DummyDataElement()

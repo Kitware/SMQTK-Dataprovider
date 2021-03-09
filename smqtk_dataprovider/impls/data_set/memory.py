@@ -1,6 +1,7 @@
 import logging
 import pickle
 import threading
+from typing import Any, Dict, Hashable, Iterator, Optional, Set, Type, TypeVar
 
 from smqtk_core.configuration import (
     from_config_dict,
@@ -12,10 +13,9 @@ from smqtk_dataprovider import DataElement, DataSet
 from smqtk_dataprovider.exceptions import ReadOnlyError
 from smqtk_dataprovider.utils import SimpleTimer
 
-from typing import Set, Dict, Optional, Iterator, Tuple, Hashable
-
 
 LOG = logging.getLogger(__name__)
+T = TypeVar("T", bound="DataMemorySet")
 
 
 class DataMemorySet (DataSet):
@@ -70,39 +70,27 @@ class DataMemorySet (DataSet):
         return c
 
     @classmethod
-    def from_config(cls, c: Dict, merge_default: bool=True) -> DataMemorySet:
-        """
-        Instantiate a new instance of this class given the configuration
-        JSON-compliant dictionary encapsulating initialization arguments.
-
-        This method should not be called via super unless an instance of the
-        class is desired.
-
-        :param c: JSON compliant dictionary encapsulating
-            a configuration.
-        :type c: dict
-
-        :param merge_default: Merge the given configuration on top of the
-            default provided by ``get_default_config``.
-        :type merge_default: bool
-
-        :return: Constructed instance from the provided config.
-        :rtype: DataMemorySet
-
-        """
+    def from_config(
+        cls: Type[T],
+        config_dict: Dict,
+        merge_default: bool = True
+    ) -> T:
         if merge_default:
-            c = merge_dict(cls.get_default_config(), c)
+            config_dict = merge_dict(cls.get_default_config(), config_dict)
 
         cache_element = None
-        if c['cache_element'] and c['cache_element']['type']:
-            cache_element = from_config_dict(c['cache_element'],
+        if config_dict['cache_element'] and config_dict['cache_element']['type']:
+            cache_element = from_config_dict(config_dict['cache_element'],
                                              DataElement.get_impls())
-        c['cache_element'] = cache_element
+        config_dict['cache_element'] = cache_element
 
-        return super(DataMemorySet, cls).from_config(c, False)
+        return super(DataMemorySet, cls).from_config(config_dict, False)
 
-    def __init__(self, cache_element: Optional[DataElement]=None,
-        pickle_protocol: int=-1):
+    def __init__(
+        self,
+        cache_element: Optional[DataElement] = None,
+        pickle_protocol: int = -1
+    ):
         """
         Initialize a new in-memory data set instance.
 
@@ -166,7 +154,7 @@ class DataMemorySet (DataSet):
                         pickle.dumps(self._element_map, self.pickle_protocol)
                     )
 
-    def get_config(self) -> Dict:
+    def get_config(self) -> Dict[str, Any]:
         """
         This implementation has no configuration properties.
 
@@ -192,7 +180,7 @@ class DataMemorySet (DataSet):
         with self._element_map_lock:
             return len(self._element_map)
 
-    def uuids(self) -> Set:
+    def uuids(self) -> Set[Hashable]:
         """
         :return: A new set of uuids represented in this data set.
         :rtype: set

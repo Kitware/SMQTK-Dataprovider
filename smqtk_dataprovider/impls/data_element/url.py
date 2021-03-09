@@ -1,12 +1,12 @@
 import mimetypes
 import re
+from typing import Dict, Optional
 
 import requests
 
 from smqtk_dataprovider import DataElement
 from smqtk_dataprovider.exceptions import InvalidUriError, ReadOnlyError
 
-from typing import Dict, Optional
 
 MIMETYPES = mimetypes.MimeTypes()
 
@@ -26,7 +26,7 @@ class DataUrlElement (DataElement):
         return True
 
     @classmethod
-    def from_uri(cls, uri: str) -> DataUrlElement:
+    def from_uri(cls, uri: str) -> "DataUrlElement":
         m = cls.URI_RE.match(uri)
         if m is not None:
             # simply pass on URI as URL address
@@ -34,7 +34,7 @@ class DataUrlElement (DataElement):
 
         raise InvalidUriError(uri, "Invalid web URI")
 
-    def __init__(self, url_address: str) -> None:
+    def __init__(self, url_address: str):
         """
         Create a new URL element for a URL address.
 

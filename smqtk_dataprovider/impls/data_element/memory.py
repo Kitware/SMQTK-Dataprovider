@@ -1,13 +1,14 @@
 import base64
 import re
+from typing import Any, Dict, Optional, Type, TypeVar
 
 from smqtk_core.dict import merge_dict
 from smqtk_dataprovider import DataElement
 from smqtk_dataprovider.exceptions import InvalidUriError, ReadOnlyError
 
-from typing import Dict, Optional
 
 BYTES_CONFIG_ENCODING = 'latin-1'
+T = TypeVar("T", bound="DataMemoryElement")
 
 
 class DataMemoryElement (DataElement):
@@ -27,8 +28,11 @@ class DataMemoryElement (DataElement):
         return True
 
     @classmethod
-    def from_config(cls, config_dict: Dict,
-        merge_default: bool=True) -> "DataMemoryElement":
+    def from_config(
+        cls: Type[T],
+        config_dict: Dict,
+        merge_default: bool = True
+    ) -> T:
         """
         Instantiate a new instance of this class given the configuration
         JSON-compliant dictionary encapsulating initialization arguments.
@@ -104,8 +108,11 @@ class DataMemoryElement (DataElement):
         raise InvalidUriError(uri, "Did not detect byte format URI")
 
     @classmethod
-    def from_base64(cls, b64_str: str,
-        content_type: Optional[str]=None) -> "DataMemoryElement":
+    def from_base64(
+        cls,
+        b64_str: str,
+        content_type: Optional[str] = None
+    ) -> "DataMemoryElement":
         """
         Create new MemoryElement instance based on a given base64 string and
         content type.
@@ -152,8 +159,11 @@ class DataMemoryElement (DataElement):
             memoryview(v)
 
     # noinspection PyShadowingBuiltins
-    def __init__(self, bytes: Optional[bytes]=None,
-        content_type: Optional[str]=None, readonly: bool=False) -> None:
+    def __init__(
+        self, bytes: Optional[bytes] = None,
+        content_type: Optional[str] = None,
+        readonly: bool = False
+    ):
         """
         Create a new DataMemoryElement from a byte string and optional content
         type.
@@ -179,15 +189,13 @@ class DataMemoryElement (DataElement):
                "{len(bytes): %d, content_type: %s, readonly: %s}" \
                % (len(self.get_bytes()), self._content_type, self._readonly)
 
-    def get_config(self) -> Dict:
+    def get_config(self) -> Dict[str, Any]:
         b = self._bytes
-        try:
-            b = b.decode(BYTES_CONFIG_ENCODING) # type: ignore
-        except AttributeError:
-            # if ``b`` is None.
-            pass
+        b_str: Optional[str] = None
+        if b is not None:
+            b_str = b.decode(BYTES_CONFIG_ENCODING)
         return {
-            "bytes": b,
+            "bytes": b_str,
             'content_type': self._content_type,
             "readonly": self._readonly,
         }

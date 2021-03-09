@@ -3,7 +3,8 @@ import unittest
 import pytest
 
 from smqtk_dataprovider.utils.postgres import psycopg2, PsqlConnectionHelper
-from typing import Iterable, Any
+from typing import Iterable
+
 
 @pytest.mark.skipif(psycopg2 is None,
                     reason="Psycopg2 module is not importable, postgres "

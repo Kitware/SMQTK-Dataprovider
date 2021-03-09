@@ -1,6 +1,7 @@
+from typing import Any, Dict, Optional
+
 from smqtk_dataprovider import DataElement
 from smqtk_dataprovider.exceptions import ReadOnlyError
-from typing import Dict, Optional
 
 # attempt to import required modules
 try:
@@ -13,7 +14,7 @@ except ImportError:
     tika_detector = None
 
 
-class HBaseDataElement (DataElement):
+class HBaseDataElement(DataElement):
     """
     Wrapper for binary data contained on an HBase server somewhere. Uses Tika
     content type detection to determine content type of served data.
@@ -23,8 +24,14 @@ class HBaseDataElement (DataElement):
     def is_usable(cls) -> bool:
         return None not in {happybase, tika_detector}
 
-    def __init__(self, element_key: str, binary_column: str, hbase_address:str,
-                 hbase_table: str, timeout: int=10000) -> None:
+    def __init__(
+        self,
+        element_key: str,
+        binary_column: str,
+        hbase_address: str,
+        hbase_table: str,
+        timeout: int = 10000,
+    ):
         """
         Create a new HBase data element wrapper/reference.
 
@@ -55,14 +62,17 @@ class HBaseDataElement (DataElement):
         self._binary_ct_cache = None
 
     def __repr__(self) -> str:
-        return super(HBaseDataElement, self).__repr__() + \
-            "{key: %s, bin_col: %s, hbase_addr: %s, hbase_table: %s, " \
-            "timeout: %d}" % (
-                self.element_key, self.binary_column, self.hbase_address,
-                self.hbase_table, self.timeout
-            )
+        return super(
+            HBaseDataElement, self
+        ).__repr__() + "{key: %s, bin_col: %s, hbase_addr: %s, hbase_table: %s, " "timeout: %d}" % (
+            self.element_key,
+            self.binary_column,
+            self.hbase_address,
+            self.hbase_table,
+            self.timeout,
+        )
 
-    def get_config(self) -> Dict:
+    def get_config(self) -> Dict[str, Any]:
         return {
             "element_key": self.element_key,
             "binary_column": self.binary_column,
@@ -76,9 +86,10 @@ class HBaseDataElement (DataElement):
             self._binary_ct_cache = tika_detector.from_buffer(self.get_bytes())
         return self._binary_ct_cache
 
-    def _new_hbase_table_connection(self) -> happybase.table:
-        return happybase.Connection(self.hbase_address, timeout=self.timeout)\
-            .table(self.hbase_table)
+    def _new_hbase_table_connection(self) -> "happybase.table":
+        return happybase.Connection(self.hbase_address, timeout=self.timeout).table(
+            self.hbase_table
+        )
 
     def is_empty(self) -> bool:
         """

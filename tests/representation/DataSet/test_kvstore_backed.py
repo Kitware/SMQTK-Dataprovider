@@ -9,7 +9,8 @@ from smqtk_dataprovider.impls.key_value_store.memory import MemoryKeyValueStore
 
 
 class TestKeyValueDataSet (unittest.TestCase):
-    MEM_STORE = None # type: MemoryKeyValueStore
+    MEM_STORE: MemoryKeyValueStore
+
     @classmethod
     def setUpClass(cls) -> None:
         cls.MEM_STORE = MemoryKeyValueStore()
@@ -44,7 +45,7 @@ class TestKeyValueDataSet (unittest.TestCase):
 
     def test_iter(self) -> None:
         kvds = KVSDataSet(self.MEM_STORE)
-        self.assertEqual(set(kvds), set(self.MEM_STORE.keys()))
+        self.assertEqual(set(kvds), set(self.MEM_STORE.values()))
 
     def test_count(self) -> None:
         kvds = KVSDataSet(self.MEM_STORE)

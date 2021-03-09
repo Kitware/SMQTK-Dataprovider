@@ -37,6 +37,7 @@ class TestDataFileSet (unittest.TestCase):
         c = DataMemorySet.get_default_config()
         c['cache_element']['type'] = 'smqtk_dataprovider.impls.data_element.memory.DataMemoryElement'
         i = DataMemorySet.from_config(c)
+        assert i.cache_element is not None
         self.assertIsNotNone(i.cache_element)
         self.assertIsInstance(i.cache_element, DataMemoryElement)
         self.assertEqual(i.cache_element.get_bytes(), b"")
@@ -104,6 +105,7 @@ class TestDataFileSet (unittest.TestCase):
 
     def test_cacheing_no_map(self) -> None:
         dms = DataMemorySet(DataMemoryElement())
+        assert dms.cache_element is not None
         dms.cache()
         # technically caches something, but that something is an empty map.
         self.assertFalse(dms.cache_element.is_empty())

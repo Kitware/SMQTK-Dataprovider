@@ -3,12 +3,12 @@ import os
 import os.path as osp
 import pickle
 import re
+from typing import Hashable, Dict, Iterator, Optional, Set
 
 from smqtk_dataprovider import DataElement, DataSet
 from smqtk_dataprovider.utils.file import safe_create_dir, iter_directory_files
 from smqtk_dataprovider.utils.string import partition_string
 
-from typing import Optional, Iterator, Dict, Set, Hashable, List
 
 LOG = logging.getLogger(__name__)
 
@@ -54,8 +54,12 @@ class DataFileSet (DataSet):
         """
         return True
 
-    def __init__(self, root_directory: str,
-        uuid_chunk: Optional[int]=10, pickle_protocol: int=-1):
+    def __init__(
+        self,
+        root_directory: str,
+        uuid_chunk: Optional[int] = 10,
+        pickle_protocol: int = -1
+    ):
         """
         Initialize a new or existing file set from a root directory.
 

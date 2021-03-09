@@ -498,7 +498,8 @@ class TestMemoryKeyValueStore (unittest.TestCase):
 
         s = MemoryKeyValueStore()
         s._table = table_before_clear
-        s.is_read_only = mock.MagicMock(return_value=True) # type: ignore
+        # noinspection PyTypeHints
+        s.is_read_only = mock.MagicMock(return_value=True)  # type: ignore
 
         self.assertRaises(
             ReadOnlyError,

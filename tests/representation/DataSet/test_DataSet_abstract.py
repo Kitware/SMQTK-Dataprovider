@@ -1,8 +1,9 @@
+from typing import Dict, Hashable, Iterator, Set
 import unittest
 import unittest.mock as mock
 
 from smqtk_dataprovider import DataSet, DataElement
-from typing import AbstractSet, Hashable, Tuple, Iterator, Dict
+
 
 class DummyDataSet (DataSet):
 
@@ -19,7 +20,7 @@ class DummyDataSet (DataSet):
     def count(self) -> int:
         pass
 
-    def uuids(self) -> AbstractSet:
+    def uuids(self) -> Set[Hashable]:
         pass
 
     def has_uuid(self, uuid: Hashable) -> bool:
@@ -41,7 +42,8 @@ class TestDataSetAbstract (unittest.TestCase):
         expected_len = 134623456
 
         ds = DummyDataSet()
-        ds.count = mock.MagicMock(return_value=expected_len) #type: ignore
+        # noinspection PyTypeHints
+        ds.count = mock.MagicMock(return_value=expected_len)  # type: ignore
 
         self.assertEqual(len(ds), expected_len)
 
@@ -55,7 +57,8 @@ class TestDataSetAbstract (unittest.TestCase):
             raise RuntimeError("not expected key")
 
         ds = DummyDataSet()
-        ds.get_data = mock.MagicMock(side_effect=expected_effect) #type: ignore
+        # noinspection PyTypeHints
+        ds.get_data = mock.MagicMock(side_effect=expected_effect)  # type: ignore
 
         self.assertRaisesRegex(
             RuntimeError,
@@ -83,7 +86,8 @@ class TestDataSetAbstract (unittest.TestCase):
             return False
 
         ds = DummyDataSet()
-        ds.has_uuid = mock.MagicMock(side_effect=expected_has_uuid_effect) #type: ignore
+        # noinspection PyTypeHints
+        ds.has_uuid = mock.MagicMock(side_effect=expected_has_uuid_effect)  # type: ignore
 
         # noinspection PyTypeChecker
         # - Using a mock object on purpose in conjunction with ``has_uuid``

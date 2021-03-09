@@ -1,7 +1,8 @@
 import logging
 import pickle
 import threading
-from typing import Hashable, Optional, Dict, Iterator, Iterable, Any, KeysView, Mapping
+from typing import Any, Dict, Hashable, Iterable, Iterator, Mapping, Optional, Type, TypeVar
+
 from smqtk_dataprovider import DataElement, KeyValueStore
 from smqtk_dataprovider.interfaces.key_value_store import NO_DEFAULT_VALUE
 from smqtk_core.configuration import (
@@ -12,6 +13,7 @@ from smqtk_core.configuration import (
 
 
 LOG = logging.getLogger(__name__)
+T = TypeVar("T", bound="MemoryKeyValueStore")
 
 
 class MemoryKeyValueStore (KeyValueStore):
@@ -53,8 +55,11 @@ class MemoryKeyValueStore (KeyValueStore):
         return default
 
     @classmethod
-    def from_config(cls, config_dict: Dict,
-        merge_default: bool=True) -> "MemoryKeyValueStore":
+    def from_config(
+        cls: Type[T],
+        config_dict: Dict,
+        merge_default: bool = True
+    ) -> T:
         """
         Instantiate a new instance of this class given the configuration
         JSON-compliant dictionary encapsulating initialization arguments.
@@ -85,7 +90,7 @@ class MemoryKeyValueStore (KeyValueStore):
                                  DataElement.get_impls())
         return super(MemoryKeyValueStore, cls).from_config(c)
 
-    def __init__(self, cache_element: Optional[DataElement]=None) -> None:
+    def __init__(self, cache_element: Optional[DataElement] = None):
         """
         Create new in-memory key-value store with optional cache data element.
 
@@ -132,7 +137,7 @@ class MemoryKeyValueStore (KeyValueStore):
 
     def get_config(self) -> Dict[str, Any]:
         # Recursively get config from data element if we have one.
-        if hasattr(self._cache_element, 'get_config'):
+        if self._cache_element is not None:
             elem_config = to_config_dict(self._cache_element)
         else:
             # No cache element, output default config with no type.
@@ -141,12 +146,11 @@ class MemoryKeyValueStore (KeyValueStore):
             'cache_element': elem_config
         }
 
-    def keys(self) -> KeysView:
+    def keys(self) -> Iterator[Hashable]:
         """
         :return: Iterator over keys in this store.
-        :rtype: __generator[collections.abc.Hashable]
         """
-        return self._table.keys()
+        return iter(self._table.keys())
 
     def is_read_only(self) -> bool:
         """
@@ -174,7 +178,7 @@ class MemoryKeyValueStore (KeyValueStore):
         """
         return key in self._table
 
-    def add(self, key: Hashable, value: object) -> "KeyValueStore":
+    def add(self, key: Hashable, value: object) -> "MemoryKeyValueStore":
         """
         Add a key-value pair to this store.
 
@@ -196,7 +200,7 @@ class MemoryKeyValueStore (KeyValueStore):
             self.cache_table()
         return self
 
-    def add_many(self, d: Mapping[Hashable, object]) -> "KeyValueStore":
+    def add_many(self, d: Mapping[Hashable, object]) -> "MemoryKeyValueStore":
         """
         Add multiple key-value pairs at a time into this store as represented in
         the provided dictionary `d`.
@@ -265,7 +269,7 @@ class MemoryKeyValueStore (KeyValueStore):
             self.cache_table()
         return self
 
-    def get(self, key: Hashable, default: object=NO_DEFAULT_VALUE) -> Any:
+    def get(self, key: Hashable, default: Any = NO_DEFAULT_VALUE) -> Any:
         """
         Get the value for the given key.
 

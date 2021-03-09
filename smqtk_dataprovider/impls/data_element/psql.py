@@ -20,6 +20,7 @@ be used to start/stop the database.
 import logging
 import hashlib
 from threading import RLock
+from typing import Dict, Optional
 
 from smqtk_dataprovider import DataElement
 from smqtk_dataprovider.utils.postgres import (
@@ -27,10 +28,10 @@ from smqtk_dataprovider.utils.postgres import (
     PsqlConnectionHelper,
 )
 
-from typing import Dict, Optional, Union, Hashable
 # Try to import required modules
 try:
-    import psycopg2  # type: ignore
+    import psycopg2
+    import psycopg2.extensions
 except ImportError:
     psycopg2 = None
 
@@ -146,14 +147,23 @@ class PostgresDataElement (DataElement):  # lgtm [py/missing-equals]
             return False
         return True
 
-    def __init__(self, element_id: Union[str, Hashable],
-                content_type: Optional[str]=None,
-                table_name: str="psql_data_elements", id_col: str="id",
-                sha1_col: str="sha1", mime_col: str="mime",
-                byte_col: str="bytes", db_name:str="postgres",
-                db_host: Optional[str]="/tmp", db_port: Optional[int]=5433,
-                db_user: Optional[str]=None, db_pass: Optional[str]=None,
-                read_only: bool=False, create_table: bool=True) -> None:
+    def __init__(
+        self,
+        element_id: str,
+        content_type: Optional[str] = None,
+        table_name: str = "psql_data_elements",
+        id_col: str = "id",
+        sha1_col: str = "sha1",
+        mime_col: str = "mime",
+        byte_col: str = "bytes",
+        db_name: str = "postgres",
+        db_host: Optional[str] = "/tmp",
+        db_port: Optional[int] = 5433,
+        db_user: Optional[str] = None,
+        db_pass: Optional[str] = None,
+        read_only: bool = False,
+        create_table: bool = True
+    ):
         """
         Create a new PostgreSQL-based data element.
 
@@ -236,7 +246,8 @@ class PostgresDataElement (DataElement):  # lgtm [py/missing-equals]
         super(PostgresDataElement, self).__init__()
 
         if not isinstance(element_id, str):
-            raise ValueError("Element ID should be a string type.")
+            raise ValueError("Element ID should be a string type for this "
+                             "implementation. Database storage is typed.")
 
         self._element_id = element_id
         self._content_type = content_type
@@ -252,10 +263,10 @@ class PostgresDataElement (DataElement):  # lgtm [py/missing-equals]
 
         # itersize is hard-coded because a single-element perspective should
         # only be retrieving one row at a time.
-        self._psql_helper = PsqlConnectionHelper(db_name, db_host, db_port,
-                                                 db_user, db_pass, 10,
-                                                 GLOBAL_PSQL_TABLE_CREATE_RLOCK
-                                                )
+        self._psql_helper = PsqlConnectionHelper(
+            db_name, db_host, db_port, db_user, db_pass, 10,
+            GLOBAL_PSQL_TABLE_CREATE_RLOCK
+        )
 
         # Set table creation SQL in helper
         if not self._read_only:
@@ -301,7 +312,7 @@ class PostgresDataElement (DataElement):  # lgtm [py/missing-equals]
             "create_table": self._create_table,
         }
 
-    def content_type(self)-> Optional[str]:
+    def content_type(self) -> Optional[str]:
         """
         :return: Standard type/subtype string for this data element, or None if
             the content type is unknown.
@@ -316,9 +327,9 @@ class PostgresDataElement (DataElement):  # lgtm [py/missing-equals]
             id_val=self._element_id
         )
 
-        def cb(cursor: psycopg2._psycopg.cursor) -> None:
+        def cb(cursor: psycopg2.extensions.cursor) -> None:
             """
-            :type cursor: psycopg2._psycopg.cursor
+            :type cursor: psycopg2.extensions.cursor
             """
             cursor.execute(q, v)
 
@@ -351,9 +362,9 @@ class PostgresDataElement (DataElement):  # lgtm [py/missing-equals]
             id_val=self._element_id
         )
 
-        def cb(cursor: psycopg2._psycopg.cursor) -> None:
+        def cb(cursor: psycopg2.extensions.cursor) -> None:
             """
-            :type cursor: psycopg2._psycopg.cursor
+            :type cursor: psycopg2.extensions.cursor
             """
             cursor.execute(q, v)
 
@@ -390,9 +401,9 @@ class PostgresDataElement (DataElement):  # lgtm [py/missing-equals]
             id_val=self._element_id,
         )
 
-        def cb(cursor: psycopg2._psycopg.cursor) -> None:
+        def cb(cursor: psycopg2.extensions.cursor) -> None:
             """
-            :type cursor: psycopg2._psycopg.cursor
+            :type cursor: psycopg2.extensions.cursor
             """
             cursor.execute(q, v)
 
@@ -416,9 +427,9 @@ class PostgresDataElement (DataElement):  # lgtm [py/missing-equals]
             id_val=self._element_id
         )
 
-        def cb(cursor: psycopg2._psycopg.cursor) -> None:
+        def cb(cursor: psycopg2.extensions.cursor) -> None:
             """
-            :type cursor: psycopg2._psycopg.cursor
+            :type cursor: psycopg2.extensions.cursor
             """
             cursor.execute(q, v)
 
@@ -483,9 +494,9 @@ class PostgresDataElement (DataElement):  # lgtm [py/missing-equals]
             byte_val=psycopg2.Binary(b)
         )
 
-        def cb(cursor: psycopg2._psycopg.cursor) -> None:
+        def cb(cursor: psycopg2.extensions.cursor) -> None:
             """
-            :type cursor: psycopg2._psycopg.cursor
+            :type cursor: psycopg2.extensions.cursor
             """
             # TODO: Could be smart here and only update if content-type/byte
             #       data differs while keeping a row-lock between queries.

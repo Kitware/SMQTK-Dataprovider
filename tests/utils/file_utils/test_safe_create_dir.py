@@ -1,9 +1,10 @@
 import errno
-import unittest.mock as mock
 import os
 import unittest
+import unittest.mock as mock
 
 from smqtk_dataprovider.utils.file import safe_create_dir
+
 
 class TestSafeCreateDir (unittest.TestCase):
 
@@ -17,8 +18,11 @@ class TestSafeCreateDir (unittest.TestCase):
 
     @mock.patch('smqtk_dataprovider.utils.file.os.path.exists')
     @mock.patch('smqtk_dataprovider.utils.file.os.makedirs')
-    def test_existError_alreadyExists(self, mock_os_makedirs: mock.MagicMock,
-        mock_osp_exists: mock.MagicMock) -> None:
+    def test_existError_alreadyExists(
+        self,
+        mock_os_makedirs: mock.MagicMock,
+        mock_osp_exists: mock.MagicMock
+    ) -> None:
         mock_os_makedirs.side_effect = OSError(errno.EEXIST,
                                                "Existing directory")
 
@@ -34,8 +38,11 @@ class TestSafeCreateDir (unittest.TestCase):
 
     @mock.patch('smqtk_dataprovider.utils.file.os.path.exists')
     @mock.patch('smqtk_dataprovider.utils.file.os.makedirs')
-    def test_existError_noExist(self, mock_os_makedirs: mock.MagicMock,
-    mock_osp_exists: mock.MagicMock) -> None:
+    def test_existError_noExist(
+        self,
+        mock_os_makedirs: mock.MagicMock,
+        mock_osp_exists: mock.MagicMock
+    ) -> None:
         mock_os_makedirs.side_effect = OSError(errno.EEXIST,
                                                "Existing directory")
         mock_osp_exists.return_value = False
@@ -48,8 +55,11 @@ class TestSafeCreateDir (unittest.TestCase):
 
     @mock.patch('smqtk_dataprovider.utils.file.os.path.exists')
     @mock.patch('smqtk_dataprovider.utils.file.os.makedirs')
-    def test_otherOsError(self, mock_os_makedirs: mock.MagicMock,
-        mock_osp_exists: mock.MagicMock) -> None:
+    def test_otherOsError(
+        self,
+        mock_os_makedirs: mock.MagicMock,
+        mock_osp_exists: mock.MagicMock
+    ) -> None:
         mock_os_makedirs.side_effect = OSError(errno.EACCES,
                                                "Permission Denied")
 

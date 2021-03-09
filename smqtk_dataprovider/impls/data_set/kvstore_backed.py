@@ -1,3 +1,5 @@
+from typing import Any, Dict, Iterator, Set, Hashable, Type, TypeVar
+
 from smqtk_dataprovider import (
     DataElement,
     DataSet,
@@ -11,9 +13,9 @@ from smqtk_core.configuration import (
 from smqtk_core.dict import merge_dict
 from smqtk_dataprovider.impls.key_value_store.memory import MemoryKeyValueStore
 
-from typing import Dict, Iterator, Set, Tuple, Hashable
 
 DFLT_KVSTORE = MemoryKeyValueStore()
+T = TypeVar("T", bound="KVSDataSet")
 
 
 class KVSDataSet (DataSet):
@@ -54,8 +56,11 @@ class KVSDataSet (DataSet):
         return c
 
     @classmethod
-    def from_config(cls, config_dict: Dict, merge_default: bool=True) \
-            -> KVSDataSet:
+    def from_config(
+        cls: Type[T],
+        config_dict: Dict,
+        merge_default: bool = True
+    ) -> T:
         """
         Instantiate a new instance of this class given the configuration
         JSON-compliant dictionary encapsulating initialization arguments.
@@ -81,7 +86,7 @@ class KVSDataSet (DataSet):
 
         return super(KVSDataSet, cls).from_config(config_dict, False)
 
-    def __init__(self, kvstore: KeyValueStore=DFLT_KVSTORE) -> None:
+    def __init__(self, kvstore: KeyValueStore = DFLT_KVSTORE):
         """
         Create new instance.
 
@@ -96,18 +101,14 @@ class KVSDataSet (DataSet):
             "Not constructed with a KeyValueStore instance."
         self._kvstore = kvstore
 
-    def get_config(self) -> Dict:
+    def get_config(self) -> Dict[str, Any]:
         return {
             'kvstore': to_config_dict(self._kvstore)
         }
 
-    def __iter__(self) -> Iterator[KeyValueStore]:
-        """
-        :return: Generator over the DataElements contained in this set in no
-            particular order.
-        """
-        for key in self._kvstore.keys():
-            yield key
+    def __iter__(self) -> Iterator[DataElement]:
+        for v in self._kvstore.values():
+            yield v
 
     def count(self) -> int:
         """
@@ -116,7 +117,7 @@ class KVSDataSet (DataSet):
         """
         return len(self._kvstore)
 
-    def uuids(self) -> Set:
+    def uuids(self) -> Set[Hashable]:
         """
         :return: A new set of uuids represented in this data set.
         :rtype: set

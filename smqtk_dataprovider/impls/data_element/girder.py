@@ -1,11 +1,11 @@
 import logging
 from io import BytesIO
+from typing import Dict, Optional
 from urllib.parse import urlparse
 
 from smqtk_dataprovider.exceptions import InvalidUriError, ReadOnlyError
 from smqtk_dataprovider import DataElement
 
-from typing import Dict, Optional
 try:
     import girder_client  # type: ignore
 except ImportError:
@@ -35,7 +35,7 @@ class GirderDataElement (DataElement):
     #       - <url> in above I guess would be the api/v1/... URL, including any
     #           parameters needed
     @classmethod
-    def from_uri(cls, uri: str) -> GirderDataElement:
+    def from_uri(cls, uri: str) -> "GirderDataElement":
         """
         Creates a ``GirderDataElement`` from ``uri``.
 
@@ -92,10 +92,13 @@ class GirderDataElement (DataElement):
 
     # NOTE: This usage of api "root" contradicts girder client's notion of the
     #       api root
-    def __init__(self, file_id: str,
-                api_root: str='http://localhost:8080/api/v1',
-                api_key: Optional[str]=None,
-                token: Optional[str]=None) -> None:
+    def __init__(
+        self,
+        file_id: str,
+        api_root: str = 'http://localhost:8080/api/v1',
+        api_key: Optional[str] = None,
+        token: Optional[str] = None
+    ):
         """
         Initialize data element to point to a specific file hosted in Girder
 

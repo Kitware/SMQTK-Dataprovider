@@ -1,6 +1,7 @@
 import random
 from typing import List
 
+
 def partition_string(s: str, segments: int) -> List[str]:
     """
     Partition a string into a number of segments. If the given number of
@@ -74,7 +75,7 @@ DEFAULT_CHAR_SET = \
     'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 
 
-def random_characters(n: float , char_set: str = DEFAULT_CHAR_SET) -> str:
+def random_characters(n: float, char_set: str = DEFAULT_CHAR_SET) -> str:
     """
     Return ``n`` random characters from the given ``char_set``.
 

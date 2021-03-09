@@ -1,5 +1,5 @@
-import unittest.mock as mock
 import unittest
+import unittest.mock as mock
 
 from smqtk_dataprovider.utils.file import safe_file_write
 

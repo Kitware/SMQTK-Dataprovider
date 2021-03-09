@@ -1,4 +1,5 @@
 import os
+from tests import TEST_DATA_DIR
 import unittest
 import unittest.mock as mock
 
@@ -6,8 +7,6 @@ from smqtk_core.configuration import configuration_test_helper
 from smqtk_dataprovider import from_uri
 from smqtk_dataprovider.exceptions import InvalidUriError, ReadOnlyError
 from smqtk_dataprovider.impls.data_element.file import DataFileElement
-
-from tests import TEST_DATA_DIR
 
 
 class TestDataFileElement (unittest.TestCase):
@@ -33,8 +32,7 @@ class TestDataFileElement (unittest.TestCase):
         self.assertEqual(d.content_type(), ex_type)
 
     @mock.patch('smqtk_dataprovider.interfaces.data_element.DataElement.write_temp')
-    def test_writeTempOverride(self,
-        mock_DataElement_wt:mock.MagicMock) -> None:
+    def test_writeTempOverride(self, mock_DataElement_wt: mock.MagicMock) -> None:
         # no manual directory, should return the base filepath
         expected_filepath = '/path/to/file.txt'
         d = DataFileElement(expected_filepath)
@@ -44,8 +42,7 @@ class TestDataFileElement (unittest.TestCase):
         self.assertEqual(expected_filepath, fp)
 
     @mock.patch('smqtk_dataprovider.interfaces.data_element.DataElement.write_temp')
-    def test_writeTempOverride_sameDir(self,
-        mock_DataElement_wt: mock.MagicMock) -> None:
+    def test_writeTempOverride_sameDir(self, mock_DataElement_wt: mock.MagicMock) -> None:
         expected_filepath = '/path/to/file.txt'
         target_dir = '/path/to'
 
@@ -56,8 +53,7 @@ class TestDataFileElement (unittest.TestCase):
         self.assertEqual(fp, expected_filepath)
 
     @mock.patch('smqtk_dataprovider.interfaces.data_element.DataElement.write_temp')
-    def test_writeTempOverride_diffDir(self,
-        mock_DataElement_wt: mock.MagicMock) -> None:
+    def test_writeTempOverride_diffDir(self, mock_DataElement_wt: mock.MagicMock) -> None:
         """
         Test that adding ``temp_dir`` parameter triggers call to parent class
         """
@@ -180,12 +176,12 @@ class TestDataFileElement (unittest.TestCase):
         print("Test file path:", test_file_path)
 
         e = from_uri(test_file_path)
-        self.assertIsInstance(e, DataFileElement)
+        assert isinstance(e, DataFileElement)
         self.assertEqual(e._filepath, test_file_path)
         self.assertEqual(e.get_bytes(), b"")
 
         e = from_uri('file://' + test_file_path)
-        self.assertIsInstance(e, DataFileElement)
+        assert isinstance(e, DataFileElement)
         self.assertEqual(e._filepath, test_file_path)
         self.assertEqual(e.get_bytes(), b"")
 

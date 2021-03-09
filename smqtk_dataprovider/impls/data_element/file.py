@@ -1,12 +1,12 @@
 import mimetypes
 import os.path as osp
 import re
+from typing import Dict, Optional
 
 from smqtk_dataprovider.exceptions import InvalidUriError, ReadOnlyError
 from smqtk_dataprovider import DataElement
 from smqtk_dataprovider.utils.file import safe_file_write
 
-from typing import Optional, Dict
 
 STR_NONE_TYPES = (str, type(None))
 
@@ -26,7 +26,7 @@ class DataFileElement (DataElement):
         return True
 
     @classmethod
-    def from_uri(cls, uri: str) -> DataFileElement:
+    def from_uri(cls, uri: str) -> "DataFileElement":
         """
         Construct a new instance based on the given URI.
 
@@ -69,8 +69,12 @@ class DataFileElement (DataElement):
 
         return DataFileElement(path)
 
-    def __init__(self, filepath: str, readonly: bool=False,
-        explicit_mimetype: Optional[str]=None) -> None:
+    def __init__(
+        self,
+        filepath: str,
+        readonly: bool = False,
+        explicit_mimetype: Optional[str] = None
+    ):
         """
         Create a new FileElement.
 
@@ -186,7 +190,7 @@ class DataFileElement (DataElement):
         else:
             raise ReadOnlyError("This file element is read only.")
 
-    def write_temp(self, temp_dir: Optional[str]=None) -> str:
+    def write_temp(self, temp_dir: Optional[str] = None) -> str:
         """
         Write this data's bytes to a temporary file on disk, returning the path
         to the written file, whose extension is guessed based on this data's

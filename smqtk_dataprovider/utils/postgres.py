@@ -1,9 +1,10 @@
 import logging
-from multiprocessing import RLock, synchronize
-from threading import RLock as rl
-from typing import Dict, Tuple, Optional, Any, Callable, Iterable, Iterator, \
-     Union
+from multiprocessing import RLock
+from multiprocessing.synchronize import RLock as T_RLock_mp
+from threading import RLock as T_RLock_tr
+from typing import Any, Callable, Dict, Generator, Iterable, Iterator, List, Optional, Tuple, Union
 import uuid
+
 
 LOG = logging.getLogger(__name__)
 
@@ -34,9 +35,13 @@ _connection_pools: Dict[
 ] = dict()
 
 
-def get_connection_pool(db_name: str, db_host: Optional[str],
-        db_port: Optional[int], db_user: Optional[str],
-        db_pass: Optional[str]) -> ThreadedConnectionPool:
+def get_connection_pool(
+    db_name: str,
+    db_host: Optional[str],
+    db_port: Optional[int],
+    db_user: Optional[str],
+    db_pass: Optional[str]
+) -> ThreadedConnectionPool:
     """
     Get the connection pool instance for a specific address specification.
 
@@ -110,44 +115,36 @@ class PsqlConnectionHelper:
     Helper class for things that interact with a PostgreSQL database.
     """
 
-    def __init__(self, db_name: str ='postgres', db_host: Optional[str]=None,
-            db_port: Optional[int]=None, db_user: Optional[str]=None,
-            db_pass:Optional[str]=None, itersize: Optional[int]=1000,
-            table_upsert_lock: \
-            Union[synchronize.RLock, rl]=GLOBAL_PSQL_TABLE_CREATE_RLOCK) \
-                -> None:
+    def __init__(
+        self,
+        db_name: str = 'postgres',
+        db_host: Optional[str] = None,
+        db_port: Optional[int] = None,
+        db_user: Optional[str] = None,
+        db_pass: Optional[str] = None,
+        itersize: Optional[int] = 1000,
+        table_upsert_lock: Union[T_RLock_mp, T_RLock_tr] = GLOBAL_PSQL_TABLE_CREATE_RLOCK
+    ):
         """
         Create a new helper instance for a set of database connection
         parameters.
 
         :param db_name: The name of the database to connect to.
-        :type db_name: str
-
         :param db_host: Host address of the Postgres server. If None, we
             assume the server is on the local machine and use the UNIX socket.
             This might be a required field on Windows machines (not tested yet).
-        :type db_host: str | None
-
         :param db_port: Port the Postgres server is exposed on. If None, we
             assume the default port (5423).
-        :type db_port: int | None
-
         :param db_user: Postgres user to connect as. If None, postgres
             defaults to using the current accessing user account name on the
             operating system.
-        :type db_user: str | None
-
         :param db_pass: Password for the user we're connecting as. This may be
             None if no password is to be used.
-        :type db_pass: str | None
-
         :param itersize: Number of records fetched per network round trip when
             iterating over a named cursor. This parameter only does anything if
             a named cursor is used.
-        :type itersize: int
 
         :param table_upsert_lock: Lock to guard table upsertion.
-        :type table_upsert_lock: multiprocessing.synchronize.RLock
         """
         # Stop construction if psycopg2 is not defined.
         if psycopg2 is None:
@@ -162,12 +159,12 @@ class PsqlConnectionHelper:
         self.itersize = itersize
 
         self.table_upsert_lock = table_upsert_lock
-        self.table_upsert_sql = None
+        self.table_upsert_sql: Optional[str] = None
 
         self.connection_pool = get_connection_pool(db_name, db_host, db_port,
                                                    db_user, db_pass)
 
-    def get_psql_connection(self) -> connection:
+    def get_psql_connection(self) -> "psycopg2.extensions.connection":
         """
         :return: A new connection to the configured database
         """
@@ -183,29 +180,25 @@ class PsqlConnectionHelper:
         query.
 
         :return: New cursor name string with a unique, random UUID embedded.
-        :rtype: str
         """
         ruuid = str(uuid.uuid4()).replace('-', '')
         return "smqtk_postgres_cursor_%s" % ruuid
 
     def set_table_upsert_sql(self, s: Optional[str]) -> None:
         """
-        TODO:
-        Not entirely sure why im getting this error here
-        SQL optional statement to upsert a table in the database before
-        executing statements. If this is not set, table upsertion will not
-        occur.
+        TODO: Not entirely sure why im getting this error here
+         SQL optional statement to upsert a table in the database before
+         executing statements. If this is not set, table upsertion will
+         not occur.
 
         ``None`` may be to disable upsertion.
 
         :param s: String SQL statement or ``None``.
-        :type s: str | None
-
         """
         with self.table_upsert_lock:
             self.table_upsert_sql = s
 
-    def ensure_table(self, cursor: psycopg2._psycopg.cursor) -> None:
+    def ensure_table(self, cursor: "psycopg2.extensions.cursor") -> None:
         """
         Execute on a PSQL connection's cursor the set table upsert command if
         set.
@@ -219,8 +212,12 @@ class PsqlConnectionHelper:
                 cursor.execute(self.table_upsert_sql)
                 cursor.connection.commit()
 
-    def single_execute(self, cursor_callback: Any, \
-        yield_result_rows: bool=False, named: bool=False) -> Iterable:
+    def single_execute(
+        self,
+        cursor_callback: Callable[["psycopg2.extensions.cursor"], None],
+        yield_result_rows: bool = False,
+        named: bool = False
+    ) -> Generator[Any, None, None]:
         """
         Perform a single SQL execution in  a new database connection. Handles
         connection/cursor acquisition and release.
@@ -242,31 +239,25 @@ class PsqlConnectionHelper:
             If this callback raises an exception, a rollback is performed on the
             connection and the connection is closed, passing the exception
             forward.
-        :type cursor_callback: (psycopg2._psycopg.cursor) -> None
-
         :param yield_result_rows: Optionally yield rows from each batch
             execution. False by default. If False, nothing is returned.
-        :type yield_result_rows: bool
-
         :param named: If a named cursor should be created, creating a
             server-side cursor. This is only compatible with executions of
             SELECT or VALUES commands.
-        :type named: bool
 
         :return: Iterator over result rows if ``yield_result_rows`` is True.
-        :rtype: __generator
-
         """
         conn = self.get_psql_connection()
 
         # Optionally create a named cursor to allow server-side iteration. This
         # is required in order to not pull the whole table into memory.
-        cursor_name = None
+        cursor_name: Optional[str] = None
         if named:
             cursor_name = self.get_unique_cursor_name()
 
         try:
             with conn:
+                cur: psycopg2.extensions.cursor
                 with conn.cursor() as cur:
                     self.ensure_table(cur)
                 with conn.cursor(cursor_name) as cur:
@@ -291,9 +282,14 @@ class PsqlConnectionHelper:
             # conn.__exit__ doesn't close connection, just the transaction
             self.connection_pool.putconn(conn)
 
-    def batch_execute(self, iterable: Iterable, cursor_callback: Any, \
-                 batch_size: Optional[int], yield_result_rows: bool=False, \
-                    named: bool=False) -> Iterator:
+    def batch_execute(
+        self,
+        iterable: Iterable,
+        cursor_callback: Callable[["psycopg2.extensions.cursor", List], None],
+        batch_size: Optional[int],
+        yield_result_rows: bool = False,
+        named: bool = False
+    ) -> Iterator:
         """
         Batch the given iterable into ``batch_size`` chunks, calling the given
         ``cursor_callback`` with each batch.
@@ -329,8 +325,6 @@ class PsqlConnectionHelper:
         nothing is to be actively yielded.
 
         :param iterable: Iterable of elements to batch.
-        :type iterable: collections.abc.Iterable
-
         :param cursor_callback: Function that takes two positional arguments:
             the cursor object for the database connection and the current batch
             elements (list-type). The given batch of elements may be of up to
@@ -342,8 +336,6 @@ class PsqlConnectionHelper:
             If this callback raises an exception, a rollback is performed on the
             connection and the connection is closed, passing the exception
             forward.
-        :type cursor_callback: (psycopg2._psycopg.cursor, list) -> None
-
         :param batch_size: Batch size limit when pulling elements from the input
             iterable. May be a positive integer, 0 or None. A value of 0 or None
             means that no batching occurs and all elements from the iterable are
@@ -351,21 +343,14 @@ class PsqlConnectionHelper:
 
             Once this number of elements are collected from the iterable, the
             callback is called with the collected batch of elements.
-        :type batch_size: int | None
-
         :param yield_result_rows: Optionally yield rows from each batch
             execution. False by default.
-        :type yield_result_rows: bool
-
         :param named: If a named cursor should be created, creating a
             server-side cursor. This is only compatible with executions of
             SELECT or VALUES commands.
-        :type named: bool
 
         :return: Iterator over result rows if ``yield_result_rows`` is True,
             otherwise None.
-        :rtype: __generator | None
-
         """
         if batch_size is None:
             batch_size = 0
@@ -376,11 +361,12 @@ class PsqlConnectionHelper:
         LOG.debug("starting multi operation (batch_size: %s)", batch_size)
 
         # Lazy initialize -- only if there are elements to iterate over
-        conn: connection = None
+        # noinspection PyTypeChecker
+        conn: psycopg2.extensions.connection = None
 
         # Create a named cursor to allow server-side iteration. This is
         # required in order to not pull the whole table into memory.
-        cursor_name = None
+        cursor_name: Optional[str] = None
         if named:
             cursor_name = self.get_unique_cursor_name()
 

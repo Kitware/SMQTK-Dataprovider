@@ -1,6 +1,6 @@
 import abc
 from collections.abc import Set as ISet
-from typing import Set, Hashable, Tuple, Iterator, Any
+from typing import Any, Hashable, Iterator, Set
 
 from smqtk_core import Configurable, Pluggable
 from smqtk_dataprovider import DataElement

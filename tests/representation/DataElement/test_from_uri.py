@@ -2,19 +2,15 @@
 Tests for high level ``from_uri`` function, separate from the
 ``DataElement.from_uri`` class method.
 """
+from typing import Dict, Optional, Iterable
 import unittest
 
 from smqtk_dataprovider import DataElement, from_uri
 from smqtk_dataprovider.exceptions import InvalidUriError
 
-from typing import Dict, Optional, Iterable
 
 class UnresolvableElement (DataElement):
     """ Does not implement from_uri, declaring no support for URI resolution """
-
-    @classmethod
-    def is_usable(cls) -> bool:
-        return True
 
     def __repr__(self) -> str:
         return super(UnresolvableElement, self).__repr__()
@@ -41,19 +37,14 @@ class UnresolvableElement (DataElement):
 class ResolvableElement (DataElement):
 
     @classmethod
-    def from_uri(cls, uri: str) -> Optional[ResolvableElement]:
+    def from_uri(cls, uri: str) -> "ResolvableElement":
         """
         :type uri: str
         :rtype: ResolvableElement
         """
         if uri.startswith('resolvable://'):
             return ResolvableElement()
-        else:
-            return None
-
-    @classmethod
-    def is_usable(cls) -> bool:
-        return True
+        raise InvalidUriError(uri, "Does not begin with 'resolvable://'.")
 
     def __repr__(self) -> str:
         return super(ResolvableElement, self).__repr__()
