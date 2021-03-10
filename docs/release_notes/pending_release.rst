@@ -16,6 +16,8 @@ CI
 
 * Fix issues with typechecking caused by using more strict checks.
 
+* Add CI for github using actions.
+
 Misc.
 
 * Minor fixes to package metadata files.
