@@ -1,10 +1,12 @@
 import abc
-from collections.abc import Set
+from collections.abc import Set as ISet
+from typing import Any, Hashable, Iterator, Set
 
 from smqtk_core import Configurable, Pluggable
+from smqtk_dataprovider import DataElement
 
 
-class DataSet (Set, Configurable, Pluggable):
+class DataSet (ISet, Configurable, Pluggable):
     """
     Abstract interface for data sets, that contain an arbitrary number of
     ``DataElement`` instances of arbitrary implementation type, keyed on
@@ -16,17 +18,17 @@ class DataSet (Set, Configurable, Pluggable):
 
     """
 
-    def __len__(self):
+    def __len__(self) -> int:
         """
         :return: Number of elements in this DataSet.
         :rtype: int
         """
         return self.count()
 
-    def __getitem__(self, uuid):
+    def __getitem__(self, uuid: Hashable) -> DataElement:
         return self.get_data(uuid)
 
-    def __contains__(self, d):
+    def __contains__(self, d: Any) -> bool:
         """
         Different than has_uuid() because this takes another DataElement
         instance, not a UUID.
@@ -41,28 +43,28 @@ class DataSet (Set, Configurable, Pluggable):
         return self.has_uuid(d.uuid())
 
     @abc.abstractmethod
-    def __iter__(self):
+    def __iter__(self) -> Iterator[DataElement]:
         """
         :return: Generator over the DataElements contained in this set in no
             particular order.
         """
 
     @abc.abstractmethod
-    def count(self):
+    def count(self) -> int:
         """
         :return: The number of data elements in this set.
         :rtype: int
         """
 
     @abc.abstractmethod
-    def uuids(self):
+    def uuids(self) -> Set[Hashable]:
         """
         :return: A new set of uuids represented in this data set.
         :rtype: set
         """
 
     @abc.abstractmethod
-    def has_uuid(self, uuid):
+    def has_uuid(self, uuid: Hashable) -> bool:
         """
         Test if the given uuid refers to an element in this data set.
 
@@ -77,7 +79,7 @@ class DataSet (Set, Configurable, Pluggable):
         """
 
     @abc.abstractmethod
-    def add_data(self, *elems):
+    def add_data(self, *elems: DataElement) -> None:
         """
         Add the given data element(s) instance to this data set.
 
@@ -90,7 +92,7 @@ class DataSet (Set, Configurable, Pluggable):
         """
 
     @abc.abstractmethod
-    def get_data(self, uuid):
+    def get_data(self, uuid: Hashable) -> DataElement:
         """
         Get the data element the given uuid references, or raise an
         exception if the uuid does not reference any element in this set.

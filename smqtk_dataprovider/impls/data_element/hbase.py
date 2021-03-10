@@ -1,6 +1,7 @@
+from typing import Any, Dict, Optional
+
 from smqtk_dataprovider import DataElement
 from smqtk_dataprovider.exceptions import ReadOnlyError
-
 
 # attempt to import required modules
 try:
@@ -13,18 +14,24 @@ except ImportError:
     tika_detector = None
 
 
-class HBaseDataElement (DataElement):
+class HBaseDataElement(DataElement):
     """
     Wrapper for binary data contained on an HBase server somewhere. Uses Tika
     content type detection to determine content type of served data.
     """
 
     @classmethod
-    def is_usable(cls):
+    def is_usable(cls) -> bool:
         return None not in {happybase, tika_detector}
 
-    def __init__(self, element_key, binary_column, hbase_address,
-                 hbase_table, timeout=10000):
+    def __init__(
+        self,
+        element_key: str,
+        binary_column: str,
+        hbase_address: str,
+        hbase_table: str,
+        timeout: int = 10000,
+    ):
         """
         Create a new HBase data element wrapper/reference.
 
@@ -54,15 +61,18 @@ class HBaseDataElement (DataElement):
 
         self._binary_ct_cache = None
 
-    def __repr__(self):
-        return super(HBaseDataElement, self).__repr__() + \
-            "{key: %s, bin_col: %s, hbase_addr: %s, hbase_table: %s, " \
-            "timeout: %d}" % (
-                self.element_key, self.binary_column, self.hbase_address,
-                self.hbase_table, self.timeout
-            )
+    def __repr__(self) -> str:
+        return super(
+            HBaseDataElement, self
+        ).__repr__() + "{key: %s, bin_col: %s, hbase_addr: %s, hbase_table: %s, " "timeout: %d}" % (
+            self.element_key,
+            self.binary_column,
+            self.hbase_address,
+            self.hbase_table,
+            self.timeout,
+        )
 
-    def get_config(self):
+    def get_config(self) -> Dict[str, Any]:
         return {
             "element_key": self.element_key,
             "binary_column": self.binary_column,
@@ -71,16 +81,17 @@ class HBaseDataElement (DataElement):
             "timeout": self.timeout,
         }
 
-    def content_type(self):
+    def content_type(self) -> Optional[str]:
         if self._binary_ct_cache is None:
             self._binary_ct_cache = tika_detector.from_buffer(self.get_bytes())
         return self._binary_ct_cache
 
-    def _new_hbase_table_connection(self):
-        return happybase.Connection(self.hbase_address, timeout=self.timeout)\
-            .table(self.hbase_table)
+    def _new_hbase_table_connection(self) -> "happybase.table":
+        return happybase.Connection(self.hbase_address, timeout=self.timeout).table(
+            self.hbase_table
+        )
 
-    def is_empty(self):
+    def is_empty(self) -> bool:
         """
         Check if this element contains no bytes.
 
@@ -91,12 +102,12 @@ class HBaseDataElement (DataElement):
         # naive impl for now
         return len(self.get_bytes()) == 0
 
-    def get_bytes(self):
+    def get_bytes(self) -> bytes:
         table = self._new_hbase_table_connection()
         r = table.row(self.element_key, columns=[self.binary_column])
         return r[self.binary_column]
 
-    def writable(self):
+    def writable(self) -> bool:
         """
         :return: if this instance supports setting bytes.
         :rtype: bool
@@ -104,7 +115,7 @@ class HBaseDataElement (DataElement):
         # No write support (yet) for HBase elements
         return False
 
-    def set_bytes(self, b):
+    def set_bytes(self, b: bytes) -> None:
         """
         Set bytes to this data element in the form of a string.
 

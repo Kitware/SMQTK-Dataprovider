@@ -1,5 +1,5 @@
-import unittest.mock as mock
 import unittest
+import unittest.mock as mock
 
 from smqtk_dataprovider.utils.file import safe_file_write
 
@@ -16,7 +16,8 @@ class TestSafeFileWrite (unittest.TestCase):
     @mock.patch('smqtk_dataprovider.utils.file.os.remove')
     @mock.patch('smqtk_dataprovider.utils.file.tempfile.NamedTemporaryFile')
     def test_safe_file_write_relative_simple(
-            self, m_NTF, m_remove, m_rename, m_scd):
+            self, m_NTF: mock.MagicMock, m_remove: mock.MagicMock,
+            m_rename: mock.MagicMock, m_scd: mock.MagicMock) -> None:
         # Experimental filepath and content.
         fp = 'bar.txt'
         expected_bytes = 'hello world'
@@ -41,7 +42,8 @@ class TestSafeFileWrite (unittest.TestCase):
     @mock.patch('smqtk_dataprovider.utils.file.os.remove')
     @mock.patch('smqtk_dataprovider.utils.file.tempfile.NamedTemporaryFile')
     def test_safe_file_write_relative_subdir(
-            self, m_NTF, m_remove, m_rename, m_scd):
+            self, m_NTF: mock.MagicMock, m_remove: mock.MagicMock,
+            m_rename: mock.MagicMock, m_scd: mock.MagicMock) -> None:
         # Experimental filepath and content.
         fp = 'foo/other/bar.txt'
         expected_bytes = 'hello world'
@@ -66,7 +68,8 @@ class TestSafeFileWrite (unittest.TestCase):
     @mock.patch('smqtk_dataprovider.utils.file.os.remove')
     @mock.patch('smqtk_dataprovider.utils.file.tempfile.NamedTemporaryFile')
     def test_safe_file_write_custom_tmp_dir(
-            self, m_NTF, m_remove, m_rename, m_scd):
+            self, m_NTF: mock.MagicMock, m_remove: mock.MagicMock,
+            m_rename: mock.MagicMock, m_scd: mock.MagicMock) -> None:
         # Experimental filepath and content.
         fp = 'foo/other/bar.txt'
         expected_bytes = 'hello world'
@@ -92,7 +95,8 @@ class TestSafeFileWrite (unittest.TestCase):
     @mock.patch('smqtk_dataprovider.utils.file.os.remove')
     @mock.patch('smqtk_dataprovider.utils.file.tempfile.NamedTemporaryFile')
     def test_safe_file_write_absolute(
-            self, m_NTF, m_remove, m_rename, m_scd):
+            self, m_NTF: mock.MagicMock, m_remove: mock.MagicMock,
+            m_rename: mock.MagicMock, m_scd: mock.MagicMock) -> None:
         # Experimental filepath and content.
         fp = '/some/absolute/dir/bar.txt'
         expected_bytes = 'hello world'
@@ -117,7 +121,8 @@ class TestSafeFileWrite (unittest.TestCase):
     @mock.patch('smqtk_dataprovider.utils.file.os.remove')
     @mock.patch('smqtk_dataprovider.utils.file.tempfile.NamedTemporaryFile')
     def test_safe_file_write_raising_write(
-            self, m_NTF, m_remove, m_rename, m_scd):
+            self, m_NTF: mock.MagicMock, m_remove: mock.MagicMock,
+            m_rename: mock.MagicMock, m_scd: mock.MagicMock) -> None:
         # Test for what happens when file.write raises an exception.
 
         # Experimental filepath and content.

@@ -1,5 +1,6 @@
 import logging
 from io import BytesIO
+from typing import Dict, Optional
 from urllib.parse import urlparse
 
 from smqtk_dataprovider.exceptions import InvalidUriError, ReadOnlyError
@@ -21,7 +22,7 @@ class GirderDataElement (DataElement):
     """
 
     @classmethod
-    def is_usable(cls):
+    def is_usable(cls) -> bool:
         """
         :return: If this element type is usable
         :rtype: bool
@@ -34,7 +35,7 @@ class GirderDataElement (DataElement):
     #       - <url> in above I guess would be the api/v1/... URL, including any
     #           parameters needed
     @classmethod
-    def from_uri(cls, uri):
+    def from_uri(cls, uri: str) -> "GirderDataElement":
         """
         Creates a ``GirderDataElement`` from ``uri``.
 
@@ -91,8 +92,13 @@ class GirderDataElement (DataElement):
 
     # NOTE: This usage of api "root" contradicts girder client's notion of the
     #       api root
-    def __init__(self, file_id, api_root='http://localhost:8080/api/v1',
-                 api_key=None, token=None):
+    def __init__(
+        self,
+        file_id: str,
+        api_root: str = 'http://localhost:8080/api/v1',
+        api_key: Optional[str] = None,
+        token: Optional[str] = None
+    ):
         """
         Initialize data element to point to a specific file hosted in Girder
 
@@ -132,14 +138,14 @@ class GirderDataElement (DataElement):
         # calls.
         self._content_type = None
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return super(GirderDataElement, self).__repr__() + \
             "{file_id: %s, api_root: %s, api_key: %s, token: %s}" % (
                 self.file_id, self.api_root, self.api_key or '',
                 self.token or ''
             )
 
-    def get_config(self):
+    def get_config(self) -> Dict:
         return {
             'file_id': self.file_id,
             'api_root': self.api_root,
@@ -147,7 +153,7 @@ class GirderDataElement (DataElement):
             'token': self.token
         }
 
-    def content_type(self):
+    def content_type(self) -> Optional[str]:
         if self._content_type is None:
             LOG.debug("Getting content type for file ID %s" % self.file_id)
             file_model = self.get_file_model()
@@ -157,7 +163,7 @@ class GirderDataElement (DataElement):
 
         return self._content_type
 
-    def get_file_model(self):
+    def get_file_model(self) -> Optional[Dict]:
         """
         Get the file model json from the server.
 
@@ -172,7 +178,7 @@ class GirderDataElement (DataElement):
         except girder_client.HttpError:
             return None
 
-    def is_empty(self):
+    def is_empty(self) -> bool:
         """
         Check if this element contains no bytes.
 
@@ -187,7 +193,7 @@ class GirderDataElement (DataElement):
         m = self.get_file_model()
         return m is None or m['size'] == 0
 
-    def get_bytes(self):
+    def get_bytes(self) -> bytes:
         """
         Get the bytes of the file stored in girder.
 
@@ -200,7 +206,7 @@ class GirderDataElement (DataElement):
         self.gc.downloadFile(self.file_id, content)
         return bytes(content.getvalue())
 
-    def writable(self):
+    def writable(self) -> bool:
         """
         Determine if a Girder file is able to be written to. Note that this
         requires inferring the access level by traversing to the parent folder
@@ -220,7 +226,7 @@ class GirderDataElement (DataElement):
             # See girder.constants.AccessType
             return folder_model['_accessLevel'] >= 1
 
-    def set_bytes(self, b):
+    def set_bytes(self, b: bytes) -> None:
         """
         Set bytes to this data element in the form of a string.
 

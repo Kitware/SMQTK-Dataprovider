@@ -12,6 +12,10 @@ Updates / New Features
 Fixes
 -----
 
+CI
+
+* Fix issues with typechecking caused by using more strict checks.
+
 Misc.
 
 * Minor fixes to package metadata files.

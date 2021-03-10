@@ -1,12 +1,14 @@
+from typing import Dict, Hashable, Iterator, Optional, Set
 import warnings
 
-from smqtk_dataprovider import DataSet
+from smqtk_dataprovider import DataSet, DataElement
 from smqtk_dataprovider.impls.data_element.psql import PostgresDataElement
 from smqtk_dataprovider.utils.postgres import PsqlConnectionHelper
 
 # Try to import required modules
 try:
-    import psycopg2  # type: ignore
+    import psycopg2
+    import psycopg2.extensions
 except ImportError:
     psycopg2 = None
 
@@ -21,21 +23,38 @@ class PostgresNativeDataSet (DataSet):
 
     Data elements retrieved from this data set will be of the
     PostgresDataElement class type.
+
+    Data elements stored will cast use the string conversion of its UUID in the
+    database. Currently that is OK since data element UUID is a checksum which
+    is returned in a standard way as a string. If this changes in the future
+    then this implementation will either be limited in what it may take in to
+    store or will require revision to handle such a later standard.
     """
 
     @classmethod
-    def is_usable(cls):
+    def is_usable(cls) -> bool:
         if psycopg2 is None:
             warnings.warn("PostgresNativeDataSet not usable due to psycopg2 "
                           "package not being importable.")
             return False
         return True
 
-    def __init__(self, table_name="psql_data_elements", id_col="id",
-                 sha1_col="sha1", mime_col="mime", byte_col="bytes",
-                 db_name="postgres", db_host="/tmp", db_port=5432,
-                 db_user=None, db_pass=None, itersize=1000, read_only=False,
-                 create_table=True):
+    def __init__(
+        self,
+        table_name: str = "psql_data_elements",
+        id_col: str = "id",
+        sha1_col: str = "sha1",
+        mime_col: str = "mime",
+        byte_col: str = "bytes",
+        db_name: str = "postgres",
+        db_host: Optional[str] = "/tmp",
+        db_port: Optional[int] = 5432,
+        db_user: Optional[str] = None,
+        db_pass: Optional[str] = None,
+        itersize: int = 1000,
+        read_only: bool = False,
+        create_table: bool = True
+    ):
         """
         Create a PostgreSQL-based data set instance.
 
@@ -64,7 +83,7 @@ class PostgresNativeDataSet (DataSet):
             Host address of the PostgreSQL server. If None, we assume the
             server is on the local machine and use the UNIX socket. This might
             be a required field on Windows machines (not tested yet).
-        :param str|None db_port:
+        :param int|None db_port:
             Port the Postgres server is exposed on. If None, we assume a
             default port (5433).
         :param str db_name:
@@ -117,7 +136,7 @@ class PostgresNativeDataSet (DataSet):
                 )
             )
 
-    def get_config(self):
+    def get_config(self) -> Dict:
         return {
             "table_name": self._table_name,
             "id_col": self._id_col,
@@ -136,12 +155,17 @@ class PostgresNativeDataSet (DataSet):
             "create_table": self._create_table,
         }
 
-    def _gen_psql_element(self, uid, content_type=None):
+    def _gen_psql_element(
+        self,
+        uid: str,
+        content_type: Optional[str] = None
+    ) -> PostgresDataElement:
         """
         Internal method to generate a psql data element with appropriate psql
         parameters.
         :param collections.abc.Hashable uid: UUID of data element.
         :param None|str content_type: Content type / MIME type of the element.
+        :returns: Generated data element instance.
         """
         e = PostgresDataElement(
             uid, content_type=content_type, table_name=self._table_name,
@@ -153,7 +177,7 @@ class PostgresNativeDataSet (DataSet):
         e._psql_helper = self._psql_helper
         return e
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[DataElement]:
         """
         :return: Generator over the DataElements contained in this set in no
             particular order.
@@ -166,14 +190,14 @@ class PostgresNativeDataSet (DataSet):
             table_name=self._table_name,
         )
 
-        def cb(cursor):
+        def cb(cursor: psycopg2.extensions.cursor) -> None:
             cursor.execute(q)
 
         for r in self._psql_helper.single_execute(cb, yield_result_rows=True):
             e_uuid, e_mimetype = r
             yield self._gen_psql_element(e_uuid, e_mimetype)
 
-    def count(self):
+    def count(self) -> int:
         """
         :return: The number of data elements in this set.
         :rtype: int
@@ -184,7 +208,7 @@ class PostgresNativeDataSet (DataSet):
             table_name=self._table_name,
         )
 
-        def cb(cursor):
+        def cb(cursor: psycopg2._psycopg.cursor) -> None:
             cursor.execute(count_query)
 
         r = list(self._psql_helper.single_execute(cb, yield_result_rows=True))
@@ -193,7 +217,7 @@ class PostgresNativeDataSet (DataSet):
             return 0
         return int(r[0][0])
 
-    def uuids(self):
+    def uuids(self) -> Set:
         """
         :return: A new set of uuids represented in this data set.
         :rtype: set
@@ -204,13 +228,13 @@ class PostgresNativeDataSet (DataSet):
             table_name=self._table_name,
         )
 
-        def cb(cursor):
+        def cb(cursor: psycopg2._psycopg.cursor) -> None:
             cursor.execute(q)
 
         return {r[0] for r in
                 self._psql_helper.single_execute(cb, yield_result_rows=True)}
 
-    def has_uuid(self, uuid):
+    def has_uuid(self, uuid: Hashable) -> bool:
         """
         Test if the given uuid refers to an element in this data set.
 
@@ -229,14 +253,14 @@ class PostgresNativeDataSet (DataSet):
             .format(id_col=self._id_col,
                     table_name=self._table_name)
 
-        def cb(cursor):
+        def cb(cursor: psycopg2._psycopg.cursor) -> None:
             cursor.execute(q, {'id_val': str(uuid)})
 
         return bool(list(
             self._psql_helper.single_execute(cb, yield_result_rows=True)
         ))
 
-    def add_data(self, *elems):
+    def add_data(self, *elems: DataElement) -> None:
         """
         Add the given data element(s) instance to this data set.
 
@@ -249,10 +273,12 @@ class PostgresNativeDataSet (DataSet):
         """
         # TODO: Optimize for batch insertion using custom query.
         for e in elems:
-            pe = self._gen_psql_element(e.uuid(), e.content_type())
+            # UUID return from data element is currently a checksum as defined
+            # by the interface as a string.
+            pe = self._gen_psql_element(str(e.uuid()), e.content_type())
             pe.set_bytes(e.get_bytes())
 
-    def get_data(self, uuid):
+    def get_data(self, uuid: Hashable) -> DataElement:
         """
         Get the data element the given uuid references, or raise an
         exception if the uuid does not reference any element in this set.
@@ -275,7 +301,7 @@ class PostgresNativeDataSet (DataSet):
                     table_name=self._table_name,
                     id_col=self._id_col)
 
-        def cb(cursor):
+        def cb(cursor: psycopg2.extensions.cursor) -> None:
             cursor.execute(q, {'id_val': str(uuid)})
 
         r = list(self._psql_helper.single_execute(cb, yield_result_rows=True))
@@ -285,4 +311,4 @@ class PostgresNativeDataSet (DataSet):
 
         # Create and return the PSQL element.
         ct = str(r[0][0])
-        return self._gen_psql_element(uuid, content_type=ct)
+        return self._gen_psql_element(str(uuid), content_type=ct)

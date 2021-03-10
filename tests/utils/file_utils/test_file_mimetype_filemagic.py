@@ -7,6 +7,7 @@ from smqtk_dataprovider.utils.file import file_mimetype_filemagic
 
 from tests import TEST_DATA_DIR
 
+
 try:
     import magic  # type: ignore
     # We know there are multiple modules named magic. Make sure the function we
@@ -23,7 +24,7 @@ except (ImportError, AttributeError):
 )
 class TestFile_mimetype_filemagic(TestCase):
 
-    def test_file_doesnt_exist(self):
+    def test_file_doesnt_exist(self) -> None:
         try:
             file_mimetype_filemagic('/this/path/probably/doesnt/exist.txt')
         except IOError as ex:
@@ -31,7 +32,7 @@ class TestFile_mimetype_filemagic(TestCase):
                              "Expected directory IO error #2. "
                              "Got %d" % ex.errno)
 
-    def test_directory_provided(self):
+    def test_directory_provided(self) -> None:
         try:
             file_mimetype_filemagic(TEST_DATA_DIR)
         except IOError as ex:
@@ -39,12 +40,12 @@ class TestFile_mimetype_filemagic(TestCase):
                              "Expected directory IO error #21. "
                              "Got %d" % ex.errno)
 
-    def test_get_mimetype_hopper(self):
+    def test_get_mimetype_hopper(self) -> None:
         m = file_mimetype_filemagic(os.path.join(TEST_DATA_DIR,
                                                  'grace_hopper.png'))
         self.assertEqual(m, 'image/png')
 
-    def test_get_mimetype_no_extension(self):
+    def test_get_mimetype_no_extension(self) -> None:
         m = file_mimetype_filemagic(
             os.path.join(TEST_DATA_DIR, 'text_file')
         )

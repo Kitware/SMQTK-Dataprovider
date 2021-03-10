@@ -3,6 +3,7 @@ import os
 import os.path as osp
 import pickle
 import re
+from typing import Hashable, Dict, Iterator, Optional, Set
 
 from smqtk_dataprovider import DataElement, DataSet
 from smqtk_dataprovider.utils.file import safe_create_dir, iter_directory_files
@@ -40,7 +41,7 @@ class DataFileSet (DataSet):
     SERIAL_FILE_RE = re.compile(r"UUID_(\w+)\.dataElement")
 
     @classmethod
-    def is_usable(cls):
+    def is_usable(cls) -> bool:
         """
         Check whether this data set implementations is available for use.
 
@@ -53,7 +54,12 @@ class DataFileSet (DataSet):
         """
         return True
 
-    def __init__(self, root_directory, uuid_chunk=10, pickle_protocol=-1):
+    def __init__(
+        self,
+        root_directory: str,
+        uuid_chunk: Optional[int] = 10,
+        pickle_protocol: int = -1
+    ):
         """
         Initialize a new or existing file set from a root directory.
 
@@ -94,7 +100,7 @@ class DataFileSet (DataSet):
 
         LOG.debug("Initializing FileSet under root dir: %s", self._root_dir)
 
-    def _iter_file_tree(self):
+    def _iter_file_tree(self) -> Iterator[str]:
         """
         Iterate over our file tree, yielding the file paths of serialized
         elements found in the expected sub-directories.
@@ -116,7 +122,7 @@ class DataFileSet (DataSet):
                 elif len(seg) == self._uuid_chunk:
                     yield fp
 
-    def _containing_dir(self, uuid):
+    def _containing_dir(self, uuid: Hashable) -> str:
         """
         Return the containing directory for something with the given UUID value
         """
@@ -132,7 +138,7 @@ class DataFileSet (DataSet):
         leading_parts = partition_string(str_uuid, self._uuid_chunk)[:-1]
         return osp.join(self._root_dir, *leading_parts)
 
-    def _fp_for_uuid(self, uuid):
+    def _fp_for_uuid(self, uuid: Hashable) -> str:
         """
         Return the filepath to where an element with the given UUID would be
         saved.
@@ -140,7 +146,7 @@ class DataFileSet (DataSet):
         return osp.join(self._containing_dir(uuid),
                         self.SERIAL_FILE_TEMPLATE % uuid)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[DataElement]:
         """
         :return: Generator over the DataElements contained in this set in no
             particular order.
@@ -150,14 +156,14 @@ class DataFileSet (DataSet):
             with open(fp, 'rb') as f:
                 yield pickle.load(f)
 
-    def get_config(self):
+    def get_config(self) -> Dict:
         return {
             "root_directory": self._root_dir,
             "uuid_chunk": self._uuid_chunk,
             "pickle_protocol": self.pickle_protocol,
         }
 
-    def count(self):
+    def count(self) -> int:
         """
         :return: The number of data elements in this set.
         :rtype: int
@@ -167,7 +173,7 @@ class DataFileSet (DataSet):
             c += 1
         return c
 
-    def uuids(self):
+    def uuids(self) -> Set[Hashable]:
         """
         :return: A new set of uuids represented in this data set.
         :rtype: set
@@ -177,7 +183,7 @@ class DataFileSet (DataSet):
             s.add(de.uuid())
         return s
 
-    def has_uuid(self, uuid):
+    def has_uuid(self, uuid: Hashable) -> bool:
         """
         Test if the given uuid refers to an element in this data set.
 
@@ -192,7 +198,7 @@ class DataFileSet (DataSet):
         # Try to access the expected file path like a hash table
         return osp.isfile(self._fp_for_uuid(uuid))
 
-    def add_data(self, *elems):
+    def add_data(self, *elems: DataElement) -> None:
         """
         Add the given data element(s) instance to this data set.
 
@@ -210,7 +216,7 @@ class DataFileSet (DataSet):
                 pickle.dump(e, f, self.pickle_protocol)
             LOG.debug("Wrote out element %s", e)
 
-    def get_data(self, uuid):
+    def get_data(self, uuid: Hashable) -> DataElement:
         """
         Get the data element the given uuid references, or raise an
         exception if the uuid does not reference any element in this set.

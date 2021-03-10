@@ -1,6 +1,7 @@
 import logging
 import pickle
 import threading
+from typing import Any, Dict, Hashable, Iterable, Iterator, Mapping, Optional, Type, TypeVar
 
 from smqtk_dataprovider import DataElement, KeyValueStore
 from smqtk_dataprovider.interfaces.key_value_store import NO_DEFAULT_VALUE
@@ -12,6 +13,7 @@ from smqtk_core.configuration import (
 
 
 LOG = logging.getLogger(__name__)
+T = TypeVar("T", bound="MemoryKeyValueStore")
 
 
 class MemoryKeyValueStore (KeyValueStore):
@@ -31,11 +33,11 @@ class MemoryKeyValueStore (KeyValueStore):
     PICKLE_PROTOCOL = 2
 
     @classmethod
-    def is_usable(cls):
+    def is_usable(cls) -> bool:
         return True
 
     @classmethod
-    def get_default_config(cls):
+    def get_default_config(cls) -> Dict[str, Any]:
         """
         Generate and return a default configuration dictionary for this class.
         This will be primarily used for generating what the configuration
@@ -53,7 +55,11 @@ class MemoryKeyValueStore (KeyValueStore):
         return default
 
     @classmethod
-    def from_config(cls, config_dict, merge_default=True):
+    def from_config(
+        cls: Type[T],
+        config_dict: Dict,
+        merge_default: bool = True
+    ) -> T:
         """
         Instantiate a new instance of this class given the configuration
         JSON-compliant dictionary encapsulating initialization arguments.
@@ -84,7 +90,7 @@ class MemoryKeyValueStore (KeyValueStore):
                                  DataElement.get_impls())
         return super(MemoryKeyValueStore, cls).from_config(c)
 
-    def __init__(self, cache_element=None):
+    def __init__(self, cache_element: Optional[DataElement] = None):
         """
         Create new in-memory key-value store with optional cache data element.
 
@@ -108,11 +114,11 @@ class MemoryKeyValueStore (KeyValueStore):
                 #: :type: dict
                 self._table = pickle.loads(c_bytes)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return super(MemoryKeyValueStore, self).__repr__() \
             % ("cache_element: %s" % repr(self._cache_element))
 
-    def cache_table(self):
+    def cache_table(self) -> None:
         """
         Cache the current table to the currently set cache element.
 
@@ -125,13 +131,13 @@ class MemoryKeyValueStore (KeyValueStore):
             self._cache_element.set_bytes(
                 pickle.dumps(self._table, self.PICKLE_PROTOCOL))
 
-    def count(self):
+    def count(self) -> int:
         with self._table_lock:
             return len(self._table)
 
-    def get_config(self):
+    def get_config(self) -> Dict[str, Any]:
         # Recursively get config from data element if we have one.
-        if hasattr(self._cache_element, 'get_config'):
+        if self._cache_element is not None:
             elem_config = to_config_dict(self._cache_element)
         else:
             # No cache element, output default config with no type.
@@ -140,14 +146,13 @@ class MemoryKeyValueStore (KeyValueStore):
             'cache_element': elem_config
         }
 
-    def keys(self):
+    def keys(self) -> Iterator[Hashable]:
         """
         :return: Iterator over keys in this store.
-        :rtype: __generator[collections.abc.Hashable]
         """
-        return self._table.keys()
+        return iter(self._table.keys())
 
-    def is_read_only(self):
+    def is_read_only(self) -> bool:
         """
         If this element is read-only or not as determined by any cache element's
         read-only status.
@@ -160,7 +165,7 @@ class MemoryKeyValueStore (KeyValueStore):
             return True
         return False
 
-    def has(self, key):
+    def has(self, key: Hashable) -> bool:
         """
         Check if this store has a value for the given key.
 
@@ -173,7 +178,7 @@ class MemoryKeyValueStore (KeyValueStore):
         """
         return key in self._table
 
-    def add(self, key, value):
+    def add(self, key: Hashable, value: object) -> "MemoryKeyValueStore":
         """
         Add a key-value pair to this store.
 
@@ -195,7 +200,7 @@ class MemoryKeyValueStore (KeyValueStore):
             self.cache_table()
         return self
 
-    def add_many(self, d):
+    def add_many(self, d: Mapping[Hashable, object]) -> "MemoryKeyValueStore":
         """
         Add multiple key-value pairs at a time into this store as represented in
         the provided dictionary `d`.
@@ -213,7 +218,7 @@ class MemoryKeyValueStore (KeyValueStore):
             self.cache_table()
         return self
 
-    def remove(self, key):
+    def remove(self, key: Hashable) -> "MemoryKeyValueStore":
         """
         Remove a single key-value entry.
 
@@ -233,7 +238,7 @@ class MemoryKeyValueStore (KeyValueStore):
             self.cache_table()
         return self
 
-    def remove_many(self, keys):
+    def remove_many(self, keys: Iterable[Hashable]) -> "MemoryKeyValueStore":
         """
         Remove multiple keys and associated values.
 
@@ -264,7 +269,7 @@ class MemoryKeyValueStore (KeyValueStore):
             self.cache_table()
         return self
 
-    def get(self, key, default=NO_DEFAULT_VALUE):
+    def get(self, key: Hashable, default: Any = NO_DEFAULT_VALUE) -> Any:
         """
         Get the value for the given key.
 
@@ -289,7 +294,7 @@ class MemoryKeyValueStore (KeyValueStore):
             else:
                 return self._table.get(key, default)
 
-    def clear(self):
+    def clear(self) -> "MemoryKeyValueStore":
         """
         Clear this key-value store.
 

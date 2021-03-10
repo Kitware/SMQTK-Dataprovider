@@ -1,4 +1,5 @@
 import os
+from typing import Iterator
 import unittest
 import unittest.mock as mock
 
@@ -11,7 +12,7 @@ from tests import TEST_DATA_DIR
 
 class TestDataFileSet (unittest.TestCase):
 
-    def test_configuration(self):
+    def test_configuration(self) -> None:
         inst = DataFileSet(root_directory='/some/dir', uuid_chunk=10,
                            pickle_protocol=-1)
         for i in configuration_test_helper(inst):  # type: DataFileSet
@@ -19,7 +20,7 @@ class TestDataFileSet (unittest.TestCase):
             assert i._uuid_chunk == 10
             assert i.pickle_protocol == -1
 
-    def test_new_invalid_uuid_chunk(self):
+    def test_new_invalid_uuid_chunk(self) -> None:
         self.assertRaises(
             ValueError,
             DataFileSet, '/', 0
@@ -30,7 +31,7 @@ class TestDataFileSet (unittest.TestCase):
             DataFileSet, '/', -1
         )
 
-    def test_new(self):
+    def test_new(self) -> None:
         # The following should be valid constructor parameter setups
         DataFileSet('/')
         DataFileSet('/', uuid_chunk=None)
@@ -42,7 +43,7 @@ class TestDataFileSet (unittest.TestCase):
         DataFileSet('relative/path', uuid_chunk=1)
         DataFileSet('relative/path', uuid_chunk=2346)
 
-    def test_iter_file_tree_chunk0(self):
+    def test_iter_file_tree_chunk0(self) -> None:
         test_dir_path = os.path.join(TEST_DATA_DIR, 'test_data_file_tree')
         expected_filepaths = {
             os.path.join(test_dir_path, 'UUID_0.dataElement'),
@@ -54,7 +55,7 @@ class TestDataFileSet (unittest.TestCase):
         actual_filepaths = set(dfs._iter_file_tree())
         self.assertSetEqual(actual_filepaths, expected_filepaths)
 
-    def test_iter_file_tree_chunk3(self):
+    def test_iter_file_tree_chunk3(self) -> None:
         test_dir_path = os.path.join(TEST_DATA_DIR, 'test_data_file_tree')
         expected_filepaths = {
             os.path.join(test_dir_path, '0/0/UUID_000.dataElement'),
@@ -68,7 +69,7 @@ class TestDataFileSet (unittest.TestCase):
         actual_filepaths = set(dfs._iter_file_tree())
         self.assertSetEqual(actual_filepaths, expected_filepaths)
 
-    def test_iter_file_tree_chunk4(self):
+    def test_iter_file_tree_chunk4(self) -> None:
         test_dir_path = os.path.join(TEST_DATA_DIR, 'test_data_file_tree')
         expected_filepaths = {
             os.path.join(test_dir_path, '4/3/2/1/UUID_43210.dataElement'),
@@ -78,7 +79,7 @@ class TestDataFileSet (unittest.TestCase):
         actual_filepaths = set(dfs._iter_file_tree())
         self.assertSetEqual(actual_filepaths, expected_filepaths)
 
-    def test_containing_dir_str_uuid(self):
+    def test_containing_dir_str_uuid(self) -> None:
         # Chunk == None
         s = DataFileSet('/', uuid_chunk=None)
         self.assertEqual(s._containing_dir('0000'), '/')
@@ -93,7 +94,7 @@ class TestDataFileSet (unittest.TestCase):
         self.assertEqual(s._containing_dir('685225624578'), '/6852/2562')
         self.assertEqual(s._containing_dir('1234567'), '/123/45')
 
-    def test_containing_dir_not_str_uuid(self):
+    def test_containing_dir_not_str_uuid(self) -> None:
         self.assertEqual(
             DataFileSet('/', None)._containing_dir(4123458),
             "/"
@@ -103,7 +104,7 @@ class TestDataFileSet (unittest.TestCase):
             "/412/34"
         )
 
-    def test_fp_for_uuid(self):
+    def test_fp_for_uuid(self) -> None:
         self.assertEqual(
             DataFileSet('/', None)._fp_for_uuid(0),
             '/UUID_0.dataElement'
@@ -120,10 +121,10 @@ class TestDataFileSet (unittest.TestCase):
     @mock.patch('smqtk_dataprovider.impls.data_set.file.pickle')
     @mock.patch('smqtk_dataprovider.impls.data_set.file.open',
                 new_callable=mock.MagicMock)
-    def test_iter(self, m_open, m_pickle):
+    def test_iter(self, m_open: mock.MagicMock, m_pickle: mock.MagicMock) -> None:
         expected_file_tree_iter = ['/a', '/b', '/d']
         dfs = DataFileSet('/')
-        dfs._iter_file_tree = mock.MagicMock(
+        dfs._iter_file_tree = mock.MagicMock(  # type: ignore
             return_value=expected_file_tree_iter)
         list(dfs)
         self.assertEqual(m_open.call_count, 3)
@@ -132,14 +133,14 @@ class TestDataFileSet (unittest.TestCase):
         m_open.assert_any_call('/b', 'rb')
         m_open.assert_any_call('/d', 'rb')
 
-    def test_count(self):
+    def test_count(self) -> None:
         expected_file_tree_iter = ['/a', '/b', '/d']
         dfs = DataFileSet('/')
-        dfs._iter_file_tree = mock.MagicMock(
+        dfs._iter_file_tree = mock.MagicMock(  # type: ignore
             return_value=expected_file_tree_iter)
         self.assertEqual(dfs.count(), 3)
 
-    def test_uuids(self):
+    def test_uuids(self) -> None:
         # mocking self iteration results
         expected_data_elements = [
             DataMemoryElement(b"a"),
@@ -153,7 +154,7 @@ class TestDataFileSet (unittest.TestCase):
         }
 
         # Replacement iterator for DataFileSet to yield expected test values.
-        def test_iter():
+        def test_iter() -> Iterator:
             for e in expected_data_elements:
                 yield e
 
@@ -164,7 +165,7 @@ class TestDataFileSet (unittest.TestCase):
             dfs = DataFileSet('/')
             self.assertSetEqual(dfs.uuids(), expected_uuid_set)
 
-    def test_add_data_not_dataelement(self):
+    def test_add_data_not_dataelement(self) -> None:
         dfs = DataFileSet('/')
         self.assertRaisesRegex(
             AssertionError,
@@ -176,7 +177,13 @@ class TestDataFileSet (unittest.TestCase):
     @mock.patch('smqtk_dataprovider.impls.data_set.file.open')
     @mock.patch('smqtk_dataprovider.impls.data_set.file.safe_create_dir')
     @mock.patch('smqtk_dataprovider.impls.data_set.file.isinstance')
-    def test_add_data_single(self, m_isinstance, m_scd, m_open, _m_pickle):
+    def test_add_data_single(
+        self,
+        m_isinstance: mock.MagicMock,
+        m_scd: mock.MagicMock,
+        m_open: mock.MagicMock,
+        _m_pickle: mock.MagicMock
+    ) -> None:
         # Pretend that we are giving DataElement instances
         m_isinstance.return_value = True
 
@@ -209,8 +216,13 @@ class TestDataFileSet (unittest.TestCase):
     @mock.patch('smqtk_dataprovider.impls.data_set.file.open')
     @mock.patch('smqtk_dataprovider.impls.data_set.file.safe_create_dir')
     @mock.patch('smqtk_dataprovider.impls.data_set.file.isinstance')
-    def test_add_data_multiple_chunk0(self, m_isinstance, m_scd, m_open,
-                                      _m_pickle):
+    def test_add_data_multiple_chunk0(
+        self,
+        m_isinstance: mock.MagicMock,
+        m_scd: mock.MagicMock,
+        m_open: mock.MagicMock,
+        _m_pickle: mock.MagicMock
+    ) -> None:
         """
         Test using the DataFileSet with "uuid_chunk" set to ``None`` (no
         subdirectories).
@@ -248,8 +260,13 @@ class TestDataFileSet (unittest.TestCase):
     @mock.patch('smqtk_dataprovider.impls.data_set.file.open')
     @mock.patch('smqtk_dataprovider.impls.data_set.file.safe_create_dir')
     @mock.patch('smqtk_dataprovider.impls.data_set.file.isinstance')
-    def test_add_data_multiple_chunk3(self, m_isinstance, m_scd, m_open,
-                                      _m_pickle):
+    def test_add_data_multiple_chunk3(
+        self,
+        m_isinstance: mock.MagicMock,
+        m_scd: mock.MagicMock,
+        m_open: mock.MagicMock,
+        _m_pickle: mock.MagicMock
+    ) -> None:
         """
         Test using the DataFileSet with "uuid_chunk" set to 3 (arbitrary choice)
         """
@@ -288,8 +305,13 @@ class TestDataFileSet (unittest.TestCase):
     @mock.patch('smqtk_dataprovider.impls.data_set.file.open')
     @mock.patch('smqtk_dataprovider.impls.data_set.file.safe_create_dir')
     @mock.patch('smqtk_dataprovider.impls.data_set.file.isinstance')
-    def test_add_data_multiple_chunk3_relative(self, m_isinstance, m_scd,
-                                               m_open, _m_pickle):
+    def test_add_data_multiple_chunk3_relative(
+        self,
+        m_isinstance: mock.MagicMock,
+        m_scd: mock.MagicMock,
+        m_open: mock.MagicMock,
+        _m_pickle: mock.MagicMock
+    ) -> None:
         # Pretend that we are giving DataElement instances
         m_isinstance.return_value = True
 
@@ -325,7 +347,7 @@ class TestDataFileSet (unittest.TestCase):
                                'wb')
 
     @mock.patch('smqtk_dataprovider.impls.data_set.file.osp.isfile')
-    def test_get_data_no_file(self, m_isfile):
+    def test_get_data_no_file(self, m_isfile: mock.MagicMock) -> None:
         # Testing when we generate a filepath that does not point to an existing
         # file, meaning the UUID is referring to a dataElement not a part of our
         # set.
@@ -341,7 +363,12 @@ class TestDataFileSet (unittest.TestCase):
     @mock.patch('smqtk_dataprovider.impls.data_set.file.pickle')
     @mock.patch('smqtk_dataprovider.impls.data_set.file.open')
     @mock.patch('smqtk_dataprovider.impls.data_set.file.osp.isfile')
-    def test_get_data_valid_filepath(self, m_isfile, m_open, m_pickle):
+    def test_get_data_valid_filepath(
+        self,
+        m_isfile: mock.MagicMock,
+        m_open: mock.MagicMock,
+        m_pickle: mock.MagicMock
+    ) -> None:
         # Testing that filepath we get back from _fp_for_uuid generator is
         # valid, meaning that the given UUID does refer to a serialized
         # DataElement in our set, which is then opened and returned.

@@ -1,5 +1,6 @@
 import logging
 import time
+from typing import Any, Callable, Optional
 
 
 LOG = logging.getLogger(__name__)
@@ -11,27 +12,29 @@ class SimpleTimer:
     statement.
     """
 
-    def __init__(self, msg, log_func=None, *args):
+    def __init__(self, msg: str, log_func: Optional[Callable[..., None]] = None, *args: Any):
         """
         Additional arguments are passed to the logging method
-        :param msg:
-        :param log_func:
-        :param args:
-        :return:
+        :param msg: Message to be displayed before and after the context block.
+        :param log_func: Optional callable to be invoked to receive the
+            message. If this is `None`, the local Logger instance to this
+            module is used.
+        :param args: Additional arguments to be passed as string formatting of
+            the given `msg`.
         """
         self._log_func = log_func
         self._msg = msg
         self._msg_args = args
         self._s = 0.0
 
-    def __enter__(self):
+    def __enter__(self) -> None:
         if self._log_func:
             self._log_func(self._msg, *self._msg_args)
         else:
             LOG.info(self._msg % self._msg_args)
         self._s = time.time()
 
-    def __exit__(self, *_):
+    def __exit__(self, *_: Any) -> None:
         if self._log_func:
             self._log_func("%s -> %f s", self._msg % self._msg_args,
                            time.time() - self._s)

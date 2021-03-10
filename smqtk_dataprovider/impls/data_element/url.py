@@ -1,5 +1,6 @@
 import mimetypes
 import re
+from typing import Dict, Optional
 
 import requests
 
@@ -19,13 +20,13 @@ class DataUrlElement (DataElement):
     URI_RE = re.compile('^https?://.+$')
 
     @classmethod
-    def is_usable(cls):
+    def is_usable(cls) -> bool:
         # URLs are not necessarily on the public internet. Local networking
         # should always be available.
         return True
 
     @classmethod
-    def from_uri(cls, uri):
+    def from_uri(cls, uri: str) -> "DataUrlElement":
         m = cls.URI_RE.match(uri)
         if m is not None:
             # simply pass on URI as URL address
@@ -33,7 +34,7 @@ class DataUrlElement (DataElement):
 
         raise InvalidUriError(uri, "Invalid web URI")
 
-    def __init__(self, url_address):
+    def __init__(self, url_address: str):
         """
         Create a new URL element for a URL address.
 
@@ -59,15 +60,15 @@ class DataUrlElement (DataElement):
         # Check that the URL is valid, i.e. actually points to something
         requests.get(self._url).raise_for_status()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return super(DataUrlElement, self).__repr__() + "{url: %s}" % self._url
 
-    def get_config(self):
+    def get_config(self) -> Dict:
         return {
             "url_address": self._url
         }
 
-    def content_type(self):
+    def content_type(self) -> Optional[str]:
         """
         :return: Standard type/subtype string for this data element, or None if
             the content type is unknown.
@@ -75,7 +76,7 @@ class DataUrlElement (DataElement):
         """
         return requests.get(self._url).headers['content-type']
 
-    def is_empty(self):
+    def is_empty(self) -> bool:
         """
         Check if this element contains no bytes.
 
@@ -85,7 +86,7 @@ class DataUrlElement (DataElement):
         """
         return len(self.get_bytes()) == 0
 
-    def get_bytes(self):
+    def get_bytes(self) -> bytes:
         """
         :return: Get the byte stream for this data element.
         :rtype: bytes
@@ -99,7 +100,7 @@ class DataUrlElement (DataElement):
         r.raise_for_status()
         return r.content
 
-    def writable(self):
+    def writable(self) -> bool:
         """
         :return: if this instance supports setting bytes.
         :rtype: bool
@@ -107,7 +108,7 @@ class DataUrlElement (DataElement):
         # Web addresses cannot be written to
         return False
 
-    def set_bytes(self, b):
+    def set_bytes(self, b: bytes) -> None:
         """
         Set bytes to this data element in the form of a string.
 
