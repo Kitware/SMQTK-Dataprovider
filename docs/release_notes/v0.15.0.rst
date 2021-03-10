@@ -1,0 +1,25 @@
+SMQTK v0.15.0 Release Notes
+===========================
+
+This is the initial release of ``smqtk-dataprovider``, spinning off from
+v0.14.0 of the monolithic `SMQTK`_ library.
+
+.. _smqtk: https://github.com/kitware/smqtk
+
+
+Fixes
+-----
+
+CI
+
+* Fix issues with typechecking caused by using more strict checks.
+
+* Add CI for github using actions.
+
+Misc.
+
+* Minor fixes to package metadata files.
+
+* Fixed issue with packages specifier in :file:`setup.py` where it was only
+  excluding the top-level ``tests`` module but including the rest. Fixed to
+  only explicitly include the ``smqtk_descriptors`` package and submodules.
