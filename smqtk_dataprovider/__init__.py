@@ -1,4 +1,4 @@
-__version__ = "0.14.0"
+__version__ = "0.15.0"
 
 from .interfaces.data_element import DataElement, from_uri  # noqa: F401
 from .interfaces.data_set import DataSet  # noqa: F401
