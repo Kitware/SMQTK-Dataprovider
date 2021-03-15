@@ -62,8 +62,6 @@ jobs:
           then
             pip install -r "$REQ_FILE"
           fi
-      - name: DEBUG what package is being imported?
-        run: python -c "import smqtk_dataprovider; print(smqtk_dataprovider)"
       - name: Run Unittests
         run: pytest --cov=smqtk_dataprovider --cov-config=.pytest.coveragerc
 
