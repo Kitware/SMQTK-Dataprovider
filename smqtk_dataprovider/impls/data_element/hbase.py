@@ -12,7 +12,7 @@ except ImportError:
     tika_detector = None
 
 
-class HBaseDataElement(DataElement):
+class HBaseDataElement(DataElement):  # lgtm [py/missing-equals]
     """
     Wrapper for binary data contained on an HBase server somewhere. Uses Tika
     content type detection to determine content type of served data.

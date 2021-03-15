@@ -11,7 +11,7 @@ BYTES_CONFIG_ENCODING = 'latin-1'
 T = TypeVar("T", bound="DataMemoryElement")
 
 
-class DataMemoryElement (DataElement):
+class DataMemoryElement (DataElement):  # lgtm [py/missing-equals]
     """
     In-memory representation of data stored in a byte list
     """
