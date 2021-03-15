@@ -6,11 +6,9 @@ from smqtk_dataprovider.exceptions import ReadOnlyError
 # attempt to import required modules
 try:
     import happybase  # type: ignore
-    import tika  # type: ignore
-    from tika import detector as tika_detector
+    from tika import detector as tika_detector  # type: ignore
 except ImportError:
     happybase = None
-    tika = None
     tika_detector = None
 
 
