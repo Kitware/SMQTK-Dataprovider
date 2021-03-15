@@ -11,3 +11,9 @@ Updates / New Features
 
 Fixes
 -----
+
+CI
+
+* Remove a debug command in a GitHub CI workflow job.
+
+* Fix some LGTM warnings.
