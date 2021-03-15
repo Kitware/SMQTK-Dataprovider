@@ -6,15 +6,13 @@ from smqtk_dataprovider.exceptions import ReadOnlyError
 # attempt to import required modules
 try:
     import happybase  # type: ignore
-    import tika  # type: ignore
-    from tika import detector as tika_detector
+    from tika import detector as tika_detector  # type: ignore
 except ImportError:
     happybase = None
-    tika = None
     tika_detector = None
 
 
-class HBaseDataElement(DataElement):
+class HBaseDataElement(DataElement):  # lgtm [py/missing-equals]
     """
     Wrapper for binary data contained on an HBase server somewhere. Uses Tika
     content type detection to determine content type of served data.

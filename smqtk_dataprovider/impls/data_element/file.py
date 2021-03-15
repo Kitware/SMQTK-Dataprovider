@@ -11,7 +11,7 @@ from smqtk_dataprovider.utils.file import safe_file_write
 STR_NONE_TYPES = (str, type(None))
 
 
-class DataFileElement (DataElement):
+class DataFileElement (DataElement):  # lgtm [py/missing-equals]
     """
     File-based data element
     """

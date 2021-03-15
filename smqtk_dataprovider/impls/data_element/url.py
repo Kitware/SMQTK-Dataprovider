@@ -11,7 +11,7 @@ from smqtk_dataprovider.exceptions import InvalidUriError, ReadOnlyError
 MIMETYPES = mimetypes.MimeTypes()
 
 
-class DataUrlElement (DataElement):
+class DataUrlElement (DataElement):  # lgtm [py/missing-equals]
     """
     Representation of data loadable via a web URL address.
     """

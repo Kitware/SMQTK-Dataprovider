@@ -15,7 +15,7 @@ except ImportError:
 LOG = logging.getLogger(__name__)
 
 
-class GirderDataElement (DataElement):
+class GirderDataElement (DataElement):  # lgtm [py/missing-equals]
     """
     Element whose data is stored via a Girder backend.  Accesses via Girder
     REST API given user credentials.
