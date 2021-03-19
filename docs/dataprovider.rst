@@ -1,8 +1,8 @@
 DataProvider
 ----------------
 
-An important part of any algorithm is the data its working over and the data that it produces.
-An important part of working with large scales of data is where the data is stored and how its accessed.
+An important part of any algorithm is the data it's working over and the data that it produces.
+An important part of working with large scales of data is where the data is stored and how it's accessed.
 The ``smqtk_dataprovider`` module contains interfaces and plugins for various core data structures, allowing plugin implementations to decide where and how the underlying raw data should be stored and accessed.
 This potentially allows algorithms to handle more data that would otherwise be feasible on a single machine.
 
@@ -10,11 +10,11 @@ This potentially allows algorithms to handle more data that would otherwise be f
 DataProvider Structures
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The following are the core data representation interfaces.
+The following are the core data representation interfaces included in this package.
 
 Note:
   It is required that implementations have a common serialization format so that they may be stored or transported by other structures in a general way without caring what the specific implementation is.
-  For this we require that all implementations be serializable via the ``pickle`` (and thus ``cPickle``) module functions.
+  For this we require that all implementations be serializable via the ``pickle`` module functions.
 
 DataElement
 +++++++++++
