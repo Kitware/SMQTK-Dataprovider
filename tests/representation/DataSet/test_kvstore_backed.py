@@ -78,8 +78,8 @@ class TestKeyValueDataSet (unittest.TestCase):
         mem_kv = MemoryKeyValueStore()
         kvds = KVSDataSet(mem_kv)
 
-        de1 = DataMemoryElement(bytes('bytes1', 'utf-8'))
-        de2 = DataMemoryElement(bytes('bytes2', 'utf-8'))
+        de1 = DataMemoryElement(b'bytes1')
+        de2 = DataMemoryElement(b'bytes2')
         kvds.add_data(de1, de2)
 
         # Check that appropriate keys and values are retrievable and located in
