@@ -1,7 +1,5 @@
 import unittest
 
-import six
-
 from smqtk_core.configuration import configuration_test_helper
 from smqtk_dataprovider.impls.data_element.memory import DataMemoryElement
 from smqtk_dataprovider.impls.data_set.kvstore_backed import KVSDataSet, DFLT_KVSTORE
@@ -80,8 +78,8 @@ class TestKeyValueDataSet (unittest.TestCase):
         mem_kv = MemoryKeyValueStore()
         kvds = KVSDataSet(mem_kv)
 
-        de1 = DataMemoryElement(six.b('bytes1'))
-        de2 = DataMemoryElement(six.b('bytes2'))
+        de1 = DataMemoryElement(b'bytes1')
+        de2 = DataMemoryElement(b'bytes2')
         kvds.add_data(de1, de2)
 
         # Check that appropriate keys and values are retrievable and located in
