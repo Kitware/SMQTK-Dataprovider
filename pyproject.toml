@@ -1,0 +1,99 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+###############################################################################
+[tool.poetry]
+name = "smqtk-dataprovider"
+# REMEMBER: `distutils.version.*Version` types can be used to compare versions
+# from strings like this.
+# SMQTK prefers to use the strict numbering standard when possible.
+version = "0.15.0"
+description = "SMQTK Data provision abstractions and implementations"
+license = "BSD-3-Clause"
+authors = ["Kitware, Inc. <smqtk-developers@kitware.com>"]
+readme = "README.md"
+repository = "https://github.com/Kitware/SMQTK-Dataprovider"
+documentation = "https://smqtk-dataprovider.readthedocs.io/"
+classifiers = [
+        'Development Status :: 3 - Alpha',
+        'Intended Audience :: Developers',
+        'Intended Audience :: Science/Research',
+        'License :: OSI Approved :: BSD License',
+        'Operating System :: MacOS :: MacOS X',
+        'Operating System :: Unix',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+setuptools = ">=53"
+numpy = "^1.19.5"
+requests = "^2.25.1"
+smqtk-core = "^0.16.0"
+girder-client = {version = "^3.1.3", optional = true}
+file-magic = {version = "^0.4.0", optional = true}
+psycopg2-binary = {version = "^2.8.6", optional = true}
+
+[tool.poetry.extras]
+girder = ["girder-client"]
+filemagic = ["file-magic"]
+psql = ["psycopg2-binary"]
+
+[tool.poetry.dev-dependencies]
+# CI
+flake8 = "^3.9.0"
+flake8-mutable = "^1.2.0"
+mypy = "^0.812"
+# Docs
+# - Also see: `docs/readthedocs-reqs.txt` for use by RTD
+Sphinx = "^3.5.3"
+sphinx-rtd-theme = "^0.5.1"
+sphinx-argparse = "^0.2.5"
+sphinx-prompt = "^1.4.0"
+livereload = "^2.6.3"
+# Testing
+coverage = "^5.5"
+pytest = "^6.2.2"
+pytest-cov = "^2.11.1"
+
+[tool.poetry.plugins."smqtk_plugins"]
+# DataElement
+"smqtk_dataprovider.impls.data_element.file" = "smqtk_dataprovider.impls.data_element.file"
+"smqtk_dataprovider.impls.data_element.girder" = "smqtk_dataprovider.impls.data_element.girder"
+"smqtk_dataprovider.impls.data_element.hbase" = "smqtk_dataprovider.impls.data_element.hbase"
+"smqtk_dataprovider.impls.data_element.matrix" = "smqtk_dataprovider.impls.data_element.matrix"
+"smqtk_dataprovider.impls.data_element.memory" = "smqtk_dataprovider.impls.data_element.memory"
+"smqtk_dataprovider.impls.data_element.psql" = "smqtk_dataprovider.impls.data_element.psql"
+"smqtk_dataprovider.impls.data_element.url" = "smqtk_dataprovider.impls.data_element.url"
+## DataSet
+"smqtk_dataprovider.impls.data_set.file" = "smqtk_dataprovider.impls.data_set.file"
+"smqtk_dataprovider.impls.data_set.kvstore_backed" = "smqtk_dataprovider.impls.data_set.kvstore_backed"
+"smqtk_dataprovider.impls.data_set.memory" = "smqtk_dataprovider.impls.data_set.memory"
+"smqtk_dataprovider.impls.data_set.psql" = "smqtk_dataprovider.impls.data_set.psql"
+## KeyValueStore
+"smqtk_dataprovider.impls.key_value_store.memory" = "smqtk_dataprovider.impls.key_value_store.memory"
+"smqtk_dataprovider.impls.key_value_store.postgres" = "smqtk_dataprovider.impls.key_value_store.postgres"
+
+###############################################################################
+[tool.pytest.ini_options]
+addopts = [
+    "-lv",                  # Show local in trace-backs.
+    "--doctest-modules",    # Increased verbosity.
+    "--tb=long",            # Trace-back print mode.
+]
+testpaths = [
+    "tests",
+    "smqtk_dataprovider",
+]
+norecursedirs = [
+    "tests/data"
+]
+doctest_optionflags = [
+    "NORMALIZE_WHITESPACE",
+    "IGNORE_EXCEPTION_DETAIL",
+]
