@@ -1,9 +1,0 @@
-# Core SMQTK requirements
-
-# This is an implicit value, here for clarity
---index-url https://pypi.python.org/simple/
-
-# Core deps
-numpy==1.19.5
-requests==2.25.1
-smqtk_core==0.15.0
