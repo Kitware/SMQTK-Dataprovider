@@ -25,5 +25,9 @@ CI
 
 * Update CI configurations to use `Poetry`_.
 
+Docs
+
+* Fix for use with poetry where appropriate.
+
 
 .. _Poetry: https://python-poetry.org/
