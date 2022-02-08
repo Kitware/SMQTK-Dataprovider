@@ -799,7 +799,7 @@ psql = ["psycopg2-binary"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.6"
-content-hash = "0a369e002acd66d4ed562c87d929d66484b5783f33466b95a3e99ef23bbd0ba7"
+content-hash = "51d2b9caae0f83a188f3a2abc786009271fe6683d347e8bdd17eee0ba928ad03"
 
 [metadata.files]
 alabaster = [
