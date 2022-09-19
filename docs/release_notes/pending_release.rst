@@ -14,6 +14,8 @@ CI
 
 * Update code-cov action usage to use v3.
 
+* Added properties file for use with SonarQube and SonarCloud.
+
 Dependencies
 
 * Updated minimum required python version to 3.7 to follow python end of life.
