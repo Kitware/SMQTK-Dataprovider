@@ -10,6 +10,10 @@ CI
 * Updated CI unittests workflow to include codecov reporting.
   Reduced CodeCov report submission by skipping this step on scheduled runs.
 
+* Update GitHub actions workflows with pinned python versions to use 3.7.
+
+* Update code-cov action usage to use v3.
+
 Dependencies
 
 * Updated minimum required python version to 3.7 to follow python end of life.
