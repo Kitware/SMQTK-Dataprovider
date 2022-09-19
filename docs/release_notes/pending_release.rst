@@ -32,7 +32,7 @@ Fixes
 
 CI
 
-* Modified CI unittests workflow to run for PRs targetting branches that match
+* Modified CI unittests workflow to run for PRs targeting branches that match
   the `release*` glob.
 
 Dependency Versions
