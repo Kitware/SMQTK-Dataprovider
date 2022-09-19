@@ -10,6 +10,13 @@ CI
 * Updated CI unittests workflow to include codecov reporting.
   Reduced CodeCov report submission by skipping this step on scheduled runs.
 
+Dependencies
+
+* Updated minimum required python version to 3.7 to follow python end of life.
+
+* Updated development abstract dep versions to "*" since we do not currently
+  require any specific versions.
+
 Documentation
 
 * Updated CONTRIBUTING.md to reference smqtk-core's CONTRIBUTING.md file.
