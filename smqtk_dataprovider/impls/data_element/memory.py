@@ -78,14 +78,11 @@ class DataMemoryElement (DataElement):  # lgtm [py/missing-equals]
         with the actual MIMETYPE of the bytes.
 
         :param uri: URI string to resolve into an element instance
-        :type uri: str
 
         :raises smqtk.exceptions.InvalidUriError: The given URI was not a
             base64 format
 
         :return: New element instance of our type.
-        :rtype: DataElement
-
         """
         if uri is None:
             raise InvalidUriError(uri, 'None value given')
@@ -122,15 +119,10 @@ class DataMemoryElement (DataElement):  # lgtm [py/missing-equals]
         expect.
 
         :param b64_str: Base64 data string.
-        :type b64_str: str
-
         :param content_type: Content type string, or None if unknown.
-        :type content_type: str | None
 
         :return: New MemoryElement instance containing the byte data in the
             given base64 string.
-        :rtype: DataMemoryElement
-
         """
         if b64_str is None:
             raise ValueError("Base 64 string should not be None")
@@ -140,23 +132,6 @@ class DataMemoryElement (DataElement):  # lgtm [py/missing-equals]
         b64_str = str(b64_str)
         return DataMemoryElement(base64.urlsafe_b64decode(b64_str),
                                  content_type)
-
-    @staticmethod
-    def _assert_is_bytes(v: Optional[bytes]) -> None:
-        """
-        Assert that the value passed in is a bytes-line object or None.
-
-        We co-opt the use of the memoryview constructor to perform the checking
-        for us.
-
-        :param v: Some value to check.
-        :raises TypeError: The input value ``v`` was not of a bytes-line type.
-        """
-        if v is not None:
-            # Check that the input is "bytes-like" by attempting construction
-            # of a memoryview, which is fast and requires a bytes-like input.
-            # We don't want to retain it, just boot-strap its error checking.
-            memoryview(v)
 
     # noinspection PyShadowingBuiltins
     def __init__(
@@ -168,18 +143,11 @@ class DataMemoryElement (DataElement):  # lgtm [py/missing-equals]
         Create a new DataMemoryElement from a byte string and optional content
         type.
 
-        :param bytes: Bytes to contain. May be None to represent no bytes.
-        :type bytes: None | bytes
-
+        :param bytes: Bytes to contain. It may be None to represent no bytes.
         :param content_type: Content type of the bytes given.
-        :type content_type: None | basestring
-
         :param readonly: If this element should allow writing or not.
-        :type readonly: bool
-
         """
         super(DataMemoryElement, self).__init__()
-        self._assert_is_bytes(bytes)
         self._bytes = bytes
         self._content_type = content_type
         self._readonly = bool(readonly)
@@ -204,7 +172,6 @@ class DataMemoryElement (DataElement):  # lgtm [py/missing-equals]
         """
         :return: Standard type/subtype string for this data element, or None if
             the content type is unknown.
-        :rtype: str or None
         """
         return self._content_type
 
@@ -213,22 +180,18 @@ class DataMemoryElement (DataElement):  # lgtm [py/missing-equals]
         Check if this element contains no bytes.
 
         :return: If this element contains 0 bytes.
-        :rtype: bool
-
         """
         return not bool(self._bytes)
 
     def get_bytes(self) -> bytes:
         """
         :return: Get the byte stream for this data element.
-        :rtype: bytes
         """
         return self._bytes or b''
 
     def writable(self) -> bool:
         """
         :return: if this instance supports setting bytes.
-        :rtype: bool
         """
         return not self._readonly
 
@@ -239,14 +202,11 @@ class DataMemoryElement (DataElement):  # lgtm [py/missing-equals]
         Previous content type value is maintained.
 
         :param b: bytes to set.
-        :type b: bytes
 
         :raises ReadOnlyError: This data element can only be read from / does
             not support writing.
-
         """
         if not self._readonly:
-            self._assert_is_bytes(b)
             self._bytes = b
         else:
             raise ReadOnlyError("This memory element cannot be written to.")
