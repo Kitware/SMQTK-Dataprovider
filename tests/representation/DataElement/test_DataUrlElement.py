@@ -48,13 +48,6 @@ class TestDataUrlElement (unittest.TestCase):
         e = DataUrlElement(self.EXAMPLE_URL)
         self.assertEqual(e.get_bytes(), open(self.EXAMPLE_PTH, 'rb').read())
 
-    @unittest.skipUnless(internet_available, "Internet not accessible")
-    def test_new_add_missing_scheme(self) -> None:
-        # Construct without scheme header, should add http://
-        e = DataUrlElement(self.EXAMPLE_URL[8:])
-        self.assertEqual(e._url, 'http://' + self.EXAMPLE_URL[8:])
-        self.assertEqual(e.get_bytes(), open(self.EXAMPLE_PTH, 'rb').read())
-
     def test_new_invalid_url(self) -> None:
         self.assertRaises(
             requests.ConnectionError,
