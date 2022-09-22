@@ -23,6 +23,10 @@ Data Elements
   * Removed assertion that given data was specifically a bytes instance via
     superfluous ``memoryview`` construction.
 
+* PostgreSQL
+
+  * Removed outdated defaults for host and port.
+
 * URL
 
   * Removed injection of ``http`` on construction to the beginning of a given

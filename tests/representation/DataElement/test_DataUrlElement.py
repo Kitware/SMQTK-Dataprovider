@@ -52,7 +52,7 @@ class TestDataUrlElement (unittest.TestCase):
         self.assertRaises(
             requests.ConnectionError,
             DataUrlElement,
-            'http://not.a.real.host/'
+            'https://not.a.real.host/'
         )
 
     @unittest.skipUnless(internet_available, "Internet not accessible")
