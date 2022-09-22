@@ -48,6 +48,8 @@ psql = ["psycopg2-binary"]
 flake8 = "*"
 flake8-mutable = "*"
 mypy = "*"
+types-psycopg2 = "*"
+types-requests = "*"
 # Docs
 # - Also see: `docs/readthedocs-reqs.txt` for use by RTD
 Sphinx = "*"

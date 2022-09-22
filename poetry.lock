@@ -771,6 +771,33 @@ optional = false
 python-versions = ">=3.6"
 
 [[package]]
+name = "types-psycopg2"
+version = "2.9.21"
+description = "Typing stubs for psycopg2"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
+name = "types-requests"
+version = "2.28.11"
+description = "Typing stubs for requests"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+types-urllib3 = "<1.27"
+
+[[package]]
+name = "types-urllib3"
+version = "1.26.24"
+description = "Typing stubs for urllib3"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "typing-extensions"
 version = "4.3.0"
 description = "Backported and Experimental Type Hints for Python 3.7+"
@@ -819,7 +846,7 @@ psql = ["psycopg2-binary"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "a023843613fa2bd79da9cb3901b7ea294873038d62d7c8add689c9ecbacd2087"
+content-hash = "11bb337da4bf94f5a77825d054b7d7697ad67772af074a624fa642e387e482c4"
 
 [metadata.files]
 alabaster = [
@@ -1304,6 +1331,18 @@ typed-ast = [
     {file = "typed_ast-1.5.4-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:98f80dee3c03455e92796b58b98ff6ca0b2a6f652120c263efdba4d6c5e58f72"},
     {file = "typed_ast-1.5.4-cp39-cp39-win_amd64.whl", hash = "sha256:0fdbcf2fef0ca421a3f5912555804296f0b0960f0418c440f5d6d3abb549f3e1"},
     {file = "typed_ast-1.5.4.tar.gz", hash = "sha256:39e21ceb7388e4bb37f4c679d72707ed46c2fbf2a5609b8b8ebc4b067d977df2"},
+]
+types-psycopg2 = [
+    {file = "types-psycopg2-2.9.21.tar.gz", hash = "sha256:16a16a7e147597040bd46b3d2ecaae198ef88e400b540c110efdf05673e5f3f4"},
+    {file = "types_psycopg2-2.9.21-py3-none-any.whl", hash = "sha256:6f05af9369abe1ffbbe86abcae23dd61cd607141349957eebd30331b36d216f2"},
+]
+types-requests = [
+    {file = "types-requests-2.28.11.tar.gz", hash = "sha256:7ee827eb8ce611b02b5117cfec5da6455365b6a575f5e3ff19f655ba603e6b4e"},
+    {file = "types_requests-2.28.11-py3-none-any.whl", hash = "sha256:af5f55e803cabcfb836dad752bd6d8a0fc8ef1cd84243061c0e27dee04ccf4fd"},
+]
+types-urllib3 = [
+    {file = "types-urllib3-1.26.24.tar.gz", hash = "sha256:a1b3aaea7dda3eb1b51699ee723aadd235488e4dc4648e030f09bc429ecff42f"},
+    {file = "types_urllib3-1.26.24-py3-none-any.whl", hash = "sha256:cf7918503d02d3576e503bbfb419b0e047c4617653bba09624756ab7175e15c9"},
 ]
 typing-extensions = [
     {file = "typing_extensions-4.3.0-py3-none-any.whl", hash = "sha256:25642c956049920a5aa49edcdd6ab1e06d7e5d467fc00e0506c44ac86fbfca02"},

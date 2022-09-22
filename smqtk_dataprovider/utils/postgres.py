@@ -10,14 +10,14 @@ LOG = logging.getLogger(__name__)
 
 
 try:
-    import psycopg2  # type: ignore
-    from psycopg2.pool import ThreadedConnectionPool  # type: ignore
-    from psycopg2.extensions import connection  # type: ignore
+    import psycopg2
+    from psycopg2.pool import ThreadedConnectionPool
+    from psycopg2.extensions import connection
 except ImportError as ex:
     LOG.warning("Failed to import psycopg2: %s", str(ex))
-    psycopg2 = None
-    ThreadedConnectionPool = None
-    connection = None
+    psycopg2 = None  # type: ignore
+    ThreadedConnectionPool = None  # type: ignore
+    connection = None  # type: ignore
 
 
 GLOBAL_PSQL_TABLE_CREATE_RLOCK = RLock()
@@ -46,29 +46,19 @@ def get_connection_pool(
     Get the connection pool instance for a specific address specification.
 
     :param db_name: The name of the database to connect to.
-    :type db_name: str
-
     :param db_host: Host address of the Postgres server. If None, we
         assume the server is on the local machine and use the UNIX socket.
         This might be a required field on Windows machines (not tested yet).
-    :type db_host: str | None
-
     :param db_port: Port the Postgres server is exposed on. If None, we
         assume the default port (5423).
-    :type db_port: int | None
-
     :param db_user: Postgres user to connect as. If None, postgres
         defaults to using the current accessing user account name on the
         operating system.
-    :type db_user: str | None
-
     :param db_pass: Password for the user we're connecting as. This may be
         None if no password is to be used.
-    :type db_pass: str | None
 
     :return: New or existing connection pool instance for the given address
         specification.
-    :rtype: ThreadedConnectionPool
     """
     key_tuple = (
         db_name,
@@ -122,7 +112,7 @@ class PsqlConnectionHelper:
         db_port: Optional[int] = None,
         db_user: Optional[str] = None,
         db_pass: Optional[str] = None,
-        itersize: Optional[int] = 1000,
+        itersize: int = 1000,
         table_upsert_lock: Union[T_RLock_mp, T_RLock_tr] = GLOBAL_PSQL_TABLE_CREATE_RLOCK
     ):
         """
@@ -142,7 +132,7 @@ class PsqlConnectionHelper:
             None if no password is to be used.
         :param itersize: Number of records fetched per network round trip when
             iterating over a named cursor. This parameter only does anything if
-            a named cursor is used.
+            a named cursor is used, which is a parameter on execution methods.
 
         :param table_upsert_lock: Lock to guard table upsertion.
         """
@@ -361,8 +351,7 @@ class PsqlConnectionHelper:
         LOG.debug("starting multi operation (batch_size: %s)", batch_size)
 
         # Lazy initialize -- only if there are elements to iterate over
-        # noinspection PyTypeChecker
-        conn: psycopg2.extensions.connection = None
+        conn: Optional[psycopg2.extensions.connection] = None
 
         # Create a named cursor to allow server-side iteration. This is
         # required in order to not pull the whole table into memory.
@@ -395,6 +384,14 @@ class PsqlConnectionHelper:
                     batch = []
 
             if batch:
+                # We wouldn't have anything in the batch if `iterable` has
+                # nothing in it, thus `conn` must have a non-None value.
+                assert conn is not None, (
+                    "It should not be possible for conn to be None at this "
+                    "time: `iterable` must have non-zero items for `batch` to "
+                    "have non-zero items."
+                )
+
                 LOG.debug('-- tail batch (size: %d)', len(batch))
                 with conn:
                     with conn.cursor() as cur:

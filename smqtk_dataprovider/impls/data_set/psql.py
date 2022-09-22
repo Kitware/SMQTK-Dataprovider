@@ -10,7 +10,7 @@ try:
     import psycopg2
     import psycopg2.extensions
 except ImportError:
-    psycopg2 = None
+    psycopg2 = None  # type: ignore
 
 
 class PostgresNativeDataSet (DataSet):
