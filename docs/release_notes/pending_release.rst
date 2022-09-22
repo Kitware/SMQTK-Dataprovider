@@ -16,6 +16,18 @@ CI
 
 * Added properties file for use with SonarQube and SonarCloud.
 
+Data Elements
+
+* Memory
+
+  * Removed assertion that given data was specifically a bytes instance via
+    superfluous ``memoryview`` construction.
+
+* URL
+
+  * Removed injection of ``http`` on construction to the beginning of a given
+    URL if any schema was missing.
+
 Dependencies
 
 * Updated minimum required python version to 3.7 to follow python end of life.
