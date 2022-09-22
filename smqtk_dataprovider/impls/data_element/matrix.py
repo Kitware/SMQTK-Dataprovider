@@ -1,5 +1,5 @@
 from io import BytesIO
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, Union
 
 import numpy
 import numpy.typing as npt
@@ -69,16 +69,21 @@ class MatrixDataElement (DataElement):  # lgtm[py/missing-equals]
         shape: Optional[Tuple] = None
         if self._matrix is not None:
             shape = self._matrix.shape
-        return super(MatrixDataElement, self).__repr__() + \
+        return (
+            super(MatrixDataElement, self).__repr__() +
             "{{shape: {}}}".format(shape)
+        )
 
     @property
-    def matrix(self) -> Optional[npt.NDArray]:
+    def matrix(self) -> Optional[Union[npt.NDArray, npt.ArrayLike]]:
         """
         :return: Get the matrix stored in this element. This may be None if
             there is no matrix currently stored in this element (is empty).
             Alternatively, the matrix may be an "empty" shape, or have zero
             area.
+
+        TODO: Narrow the return type just `npt.NDArray` once mypy supports
+              asymmetric property type annotation.
         """
         return self._matrix
 
