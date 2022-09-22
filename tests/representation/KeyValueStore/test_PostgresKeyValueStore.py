@@ -85,21 +85,22 @@ class TestPostgresKeyValueStore (unittest.TestCase):
 
         # Cursor is created via a context (i.e. __enter__()
         #: :type: mock.Mock
-        mock_execute = s._psql_helper.get_psql_connection().cursor()\
-                        .__enter__().execute
+        mock_execute = (
+            s._psql_helper.get_psql_connection().cursor().__enter__().execute
+        )
 
         s.remove(expected_key)
 
         # Call to ensure table and call to remove.
-        mock_execute.assert_called_once()
+        mock_execute.assert_called_once()  # type: ignore
         # Call should have been with provided key as converted to postgres
         # bytea type.
         assert re.match("DELETE FROM .+ WHERE .+ LIKE .+",
-                        mock_execute.call_args[0][0])
-        self.assertEqual(set(mock_execute.call_args[0][1].keys()),
+                        mock_execute.call_args[0][0])  # type: ignore
+        self.assertEqual(set(mock_execute.call_args[0][1].keys()),  # type: ignore
                          {'key_like'})
         self.assertEqual(
-            mock_execute.call_args[0][1]['key_like'].getquoted(),
+            mock_execute.call_args[0][1]['key_like'].getquoted(),  # type: ignore
             expected_key_bytea_quoted
         )
 
