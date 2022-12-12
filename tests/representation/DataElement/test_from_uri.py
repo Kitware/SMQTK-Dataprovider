@@ -21,17 +21,14 @@ class UnresolvableElement (DataElement):
     def content_type(self) -> None:
         return None
 
-    def is_empty(self) -> bool:
-        pass
+    def is_empty(self) -> bool: ...  # type: ignore[empty-body]
 
     def get_bytes(self) -> bytes:
         return bytes()
 
-    def set_bytes(self, b: bytes) -> None:
-        pass
+    def set_bytes(self, b: bytes) -> None: ...
 
-    def writable(self) -> bool:
-        pass
+    def writable(self) -> bool: ...  # type: ignore[empty-body]
 
 
 class ResolvableElement (DataElement):
@@ -55,8 +52,7 @@ class ResolvableElement (DataElement):
     def content_type(self) -> Optional[str]:
         return None
 
-    def is_empty(self) -> bool:
-        pass
+    def is_empty(self) -> bool: ...  # type: ignore[empty-body]
 
     def get_bytes(self) -> bytes:
         return bytes()
@@ -64,8 +60,7 @@ class ResolvableElement (DataElement):
     def set_bytes(self, b: bytes) -> None:
         pass
 
-    def writable(self) -> bool:
-        pass
+    def writable(self) -> bool: ...  # type: ignore[empty-body]
 
 
 class TestDataElementHighLevelFromUri (unittest.TestCase):

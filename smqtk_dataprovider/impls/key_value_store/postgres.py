@@ -306,8 +306,6 @@ class PostgresKeyValueStore (KeyValueStore):
         :rtype: bool
 
         """
-        super(PostgresKeyValueStore, self).has(key)
-
         # Try to select based on given key value. If any rows are returned,
         # there is clearly a key that matches.
         q = self.SqlTemplates.SELECT_LIKE_TMPL.format(

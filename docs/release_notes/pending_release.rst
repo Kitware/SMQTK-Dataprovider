@@ -51,6 +51,8 @@ CI
 * Modified CI unittests workflow to run for PRs targeting branches that match
   the `release*` glob.
 
+* Fixed new issues raised by updated version of ``mypy``.
+
 Dependency Versions
 
 * Updated the locked version of urllib3 to address a security vulnerability.
