@@ -1,5 +1,7 @@
 v0.17.0
 =======
+This minor release removes support for python version 3.6 which has since
+reached EoL.
 
 
 Updates / New Features
