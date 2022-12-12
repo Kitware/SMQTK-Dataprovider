@@ -14,23 +14,17 @@ class DummyDataSet (DataSet):
     def __init__(self) -> None:
         super(DummyDataSet, self).__init__()
 
-    def __iter__(self) -> Iterator:
-        pass
+    def __iter__(self) -> Iterator: ...  # type: ignore[empty-body]
 
-    def count(self) -> int:
-        pass
+    def count(self) -> int: ...  # type: ignore[empty-body]
 
-    def uuids(self) -> Set[Hashable]:
-        pass
+    def uuids(self) -> Set[Hashable]: ...  # type: ignore[empty-body]
 
-    def has_uuid(self, uuid: Hashable) -> bool:
-        pass
+    def has_uuid(self, uuid: Hashable) -> bool: ...  # type: ignore[empty-body]
 
-    def add_data(self, *elems: DataElement) -> None:
-        pass
+    def add_data(self, *elems: DataElement) -> None: ...
 
-    def get_data(self, uuid: Hashable) -> DataElement:
-        pass
+    def get_data(self, uuid: Hashable) -> DataElement: ...  # type: ignore[empty-body]
 
     def get_config(self) -> Dict:
         return {}

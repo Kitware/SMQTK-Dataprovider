@@ -18,8 +18,7 @@ class DummyKVStore (KeyValueStore):
     def is_usable(cls) -> bool:
         return True
 
-    def get_config(self) -> Dict:
-        pass
+    def get_config(self) -> Dict: ...  # type: ignore[empty-body]
 
     # KVStore abc methods
 
@@ -29,8 +28,7 @@ class DummyKVStore (KeyValueStore):
     def count(self) -> int:
         return self.TEST_COUNT
 
-    def keys(self) -> Iterator[Hashable]:
-        pass
+    def keys(self) -> Iterator[Hashable]: ...  # type: ignore[empty-body]
 
     def is_read_only(self) -> bool:
         return self.TEST_READ_ONLY
@@ -43,11 +41,9 @@ class DummyKVStore (KeyValueStore):
         super(DummyKVStore, self).add_many(d)
         return self
 
-    def has(self, key: Union[int, object, str]) -> bool:
-        pass
+    def has(self, key: Union[int, object, str]) -> bool: ...  # type: ignore[empty-body]
 
-    def get(self, key: Hashable, default: Any = NO_DEFAULT_VALUE) -> Any:
-        pass
+    def get(self, key: Hashable, default: Any = NO_DEFAULT_VALUE) -> Any: ...   # type: ignore[empty-body]
 
     def remove(self, key: Hashable) -> "DummyKVStore":
         super(DummyKVStore, self).remove(key)
