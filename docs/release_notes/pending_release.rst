@@ -16,8 +16,10 @@ CI
 
 * Added properties file for use with SonarQube and SonarCloud.
 
-* Add script and workflow to support release process as described in smqtk-core
-  shared document.
+* Added script and workflow to support release process as described in
+  smqtk-core shared document.
+
+* Added explicit provision of codecov repository token to github action.
 
 Data Elements
 
