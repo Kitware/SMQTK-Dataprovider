@@ -16,6 +16,9 @@ CI
 
 * Added properties file for use with SonarQube and SonarCloud.
 
+* Add script and workflow to support release process as described in smqtk-core
+  shared document.
+
 Data Elements
 
 * Memory
