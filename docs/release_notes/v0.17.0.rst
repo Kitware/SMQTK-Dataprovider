@@ -23,6 +23,10 @@ CI
 
 * Added explicit provision of codecov repository token to github action.
 
+* Add testing for py3.11.
+
+* Use modern numpy for python 3.8 and beyond.
+
 Data Elements
 
 * Memory
