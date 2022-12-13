@@ -49,8 +49,7 @@ class DummyDataElement (DataElement):
     def content_type(self) -> str:
         return self.TEST_CONTENT_TYPE
 
-    def is_empty(self) -> bool:
-        pass
+    def is_empty(self) -> bool: ...  # type: ignore[empty-body]
 
     def get_bytes(self) -> bytes:
         return self.TEST_BYTES

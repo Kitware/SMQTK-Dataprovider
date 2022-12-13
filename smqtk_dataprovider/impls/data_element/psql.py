@@ -33,7 +33,7 @@ try:
     import psycopg2
     import psycopg2.extensions
 except ImportError:
-    psycopg2 = None
+    psycopg2 = None  # type: ignore
 
 
 LOG = logging.getLogger(__name__)
@@ -50,9 +50,6 @@ class PostgresDataElement (DataElement):  # lgtm [py/missing-equals]
     - data SHA1 (effective UID)
     - data content-type / MIMETYPE
     - data bytes
-
-    Efficient connection pooling may be achieved via external utilities like
-    PGBounder.
 
     Due to the use of the "ON CONFLICT" clause in upserting data, this
     implementation requires at least PostgreSQL version 9.5 or greater.
@@ -157,8 +154,8 @@ class PostgresDataElement (DataElement):  # lgtm [py/missing-equals]
         mime_col: str = "mime",
         byte_col: str = "bytes",
         db_name: str = "postgres",
-        db_host: Optional[str] = "/tmp",
-        db_port: Optional[int] = 5433,
+        db_host: Optional[str] = None,
+        db_port: Optional[int] = None,
         db_user: Optional[str] = None,
         db_pass: Optional[str] = None,
         read_only: bool = False,
@@ -181,8 +178,6 @@ class PostgresDataElement (DataElement):  # lgtm [py/missing-equals]
         :param element_id: ID to reference a specific data element row in the
             table.  This is required in the same way that a path is required to
             point to a file on a filesystem.
-        :type element_id: str
-
         :param content_type: Expected mime-type of byte data set to this
             element.  This only affects setting the mime-type field when setting
             new bytes.  ``content_type()`` will always reflect what is stored in
@@ -193,55 +188,29 @@ class PostgresDataElement (DataElement):  # lgtm [py/missing-equals]
             ``set_bytes``.  If this is None and there is no mime-type already
             set in the database, no mime-type will be set on the next
             ``set_bytes`` call.
-        :type content_type: str | None
-
         :param table_name: String label of the table in the database to interact
             with.
-        :type table_name: str
-
         :param id_col: Name of the element ID column in ``table_name``.
-        :type id_col: str
-
         :param sha1_col: Name of the SHA1 column in ``table_name``.
-        :type sha1_col: str
-
         :param mime_col: Name of the MIMETYPE column in ``table_name``.
-        :type mime_col: str
-
         :param byte_col: Name of the column storing byte data in ``table_name``.
-        :type byte_col: str
-
         :param db_host: Host address of the PostgreSQL server. If None, we
             assume the server is on the local machine and use the UNIX socket.
             This might be a required field on Windows machines (not tested yet).
-        :type db_host: str | None
-
         :param db_port: Port the Postgres server is exposed on. If None, we
             assume a default port (5433).
-        :type db_port: int | None
-
         :param db_name: The name of the database to connect to.
-        :type db_name: str
-
         :param db_user: Postgres user to connect as. If None, postgres
             defaults to using the current accessing user account name on the
             operating system.
-        :type db_user: str | None
-
         :param db_pass: Password for the user we're connecting as. This may be
             None if no password is to be used.
-        :type db_pass: str | None
-
         :param read_only: Only allow reading of this data.  Modification actions
             will throw a ReadOnlyError exceptions.
-        :type read_only: bool
-
         :param create_table: If this instance should try to create the storing
             table before actions are performed against it. If the configured
             user does not have sufficient permissions to create the table and it
             does not currently exist, an exception will be raised.
-        :type create_table: bool
-
         """
         super(PostgresDataElement, self).__init__()
 

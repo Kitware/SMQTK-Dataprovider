@@ -39,7 +39,7 @@ def safe_create_dir(d: str) -> str:
 @contextlib.contextmanager
 def safe_file_context(
     path: str,
-    dir: str = None,
+    dir: Optional[str] = None,
     **tempfile_kwargs: Any
 ) -> Generator[IO, None, None]:
     """
@@ -138,7 +138,7 @@ def safe_file_write(
 def make_tempfile(
     suffix: str = "",
     prefix: str = "tmp",
-    directory: str = None,
+    directory: Optional[str] = None,
     text: bool = False
 ) -> str:
     """

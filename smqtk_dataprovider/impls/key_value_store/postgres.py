@@ -14,7 +14,7 @@ try:
 except ImportError as ex:
     logging.getLogger(__name__)\
            .warning("Failed to import psycopg2: %s", str(ex))
-    psycopg2 = None
+    psycopg2 = None  # type: ignore
 
 
 PSQL_TABLE_CREATE_RLOCK = multiprocessing.RLock()
@@ -85,7 +85,7 @@ class PostgresKeyValueStore (KeyValueStore):
         db_port: Optional[int] = None,
         db_user: Optional[str] = None,
         db_pass: Optional[str] = None,
-        batch_size: Optional[int] = 1000,
+        batch_size: int = 1000,
         pickle_protocol: int = -1,
         read_only: bool = False,
         create_table: bool = True
@@ -94,62 +94,37 @@ class PostgresKeyValueStore (KeyValueStore):
         Initialize a PostgreSQL-backed data set instance.
 
         :param table_name: Name of the table to use.
-        :type table_name: str
-
         :param key_col: Name of the column containing the UUID signatures.
-        :type key_col: str
-
         :param value_col: Name of the table column that will contain
             serialized elements.
-        :type value_col: str
-
         :param db_name: The name of the database to connect to.
-        :type db_name: str
-
         :param db_host: Host address of the Postgres server. If None, we
             assume the server is on the local machine and use the UNIX socket.
             This might be a required field on Windows machines (not tested yet).
-        :type db_host: str | None
-
         :param db_port: Port the Postgres server is exposed on. If None, we
             assume the default port (5423).
-        :type db_port: int | None
-
         :param db_user: Postgres user to connect as. If None, postgres
             defaults to using the current accessing user account name on the
             operating system.
-        :type db_user: str | None
-
         :param db_pass: Password for the user we're connecting as. This may be
             None if no password is to be used.
-        :type db_pass: str | None
-
         :param batch_size: For queries that handle sending or
             receiving many queries at a time, batch queries based on this size.
-            If this is None, then no batching occurs.
 
             The advantage of batching is that it reduces the memory impact for
             queries dealing with a very large number of elements (don't have to
             store the full query for all elements in RAM), but the transaction
             will be some amount slower due to splitting the query into multiple
             transactions.
-        :type batch_size: int | None
-
         :param pickle_protocol: Pickling protocol to use. We will use -1 by
-            default (latest version, probably binary).
-        :type pickle_protocol: int
-
+            default (the latest version, probably binary).
         :param read_only: Only allow read actions against this index.
             Modification actions will throw a ReadOnlyError exceptions.
-        :type read_only: bool
-
         :param create_table: If this instance should try to create the storing
             table before actions are performed against it when not set to be
             read-only. If the configured user does not have sufficient
             permissions to create the table and it does not currently exist, an
             exception will be raised.
-        :type create_table: bool
-
         """
         super(PostgresKeyValueStore, self).__init__()
 
@@ -204,15 +179,15 @@ class PostgresKeyValueStore (KeyValueStore):
         return psycopg2.Binary(pickle.dumps(k))
 
     @staticmethod
-    def _bin_to_py(b: "psycopg2.Binary") -> Any:
+    def _bin_to_py(b: memoryview) -> Any:
         """
-        Un-"translate" psycopg2.Binary value (buffer) to a python type.
+        Un-"translate" a memory buffer from a PSQL query into a python type.
 
         :param b: ``psycopg2.Binary`` buffer instance as retrieved from a
             PostgreSQL query.
 
         :return: Python object instance as loaded via pickle from the given
-            ``psycopg2.Binary`` buffer.
+            buffer.
         """
         return pickle.loads(bytes(b))
 
@@ -331,8 +306,6 @@ class PostgresKeyValueStore (KeyValueStore):
         :rtype: bool
 
         """
-        super(PostgresKeyValueStore, self).has(key)
-
         # Try to select based on given key value. If any rows are returned,
         # there is clearly a key that matches.
         q = self.SqlTemplates.SELECT_LIKE_TMPL.format(

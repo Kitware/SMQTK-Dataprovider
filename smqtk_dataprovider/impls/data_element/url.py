@@ -53,10 +53,6 @@ class DataUrlElement (DataElement):  # lgtm [py/missing-equals]
 
         self._url = url_address
 
-        # make sure that url has a http:// or https:// prefix
-        if not (self._url[:7] == "http://" or self._url[:8] == "https://"):
-            self._url = "http://" + self._url
-
         # Check that the URL is valid, i.e. actually points to something
         requests.get(self._url).raise_for_status()
 
