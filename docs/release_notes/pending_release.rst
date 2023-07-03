@@ -4,18 +4,5 @@ Pending Release Notes
 Updates / New Features
 ----------------------
 
-Python
-
-* New minimum supported python changed to `python = "^3.8"`.
-
-CI
-
-* Updated CI unittests to reflect new minimum support `python = "^3.8"`.
-
 Fixes
 -----
-
-Dependency Versions
-
-* Updated the locked versions of dependencies to reflect new minimum
-  support `python = "^3.8".

@@ -1,0 +1,23 @@
+v0.18.0
+=======
+
+This minor release updates the mimumum supported python to `python = "^3.8"`, addresses dependency vulnerabilities, and updates typing to conform with current mypy and pytest standards.
+
+Updates / New Features
+----------------------
+
+Python
+
+* New minimum supported python changed to `python = "^3.8"`.
+
+CI
+
+* Updated CI unittests to reflect new minimum support `python = "^3.8"`.
+
+Fixes
+-----
+
+Dependency Versions
+
+* Updated the locked versions of dependencies to reflect new minimum
+  support `python = "^3.8".
