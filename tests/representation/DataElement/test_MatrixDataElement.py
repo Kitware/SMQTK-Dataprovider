@@ -80,7 +80,7 @@ class TestMatrixDataElement (object):
         e = MatrixDataElement((1, 2, 3, 4), readonly=True)
         with pytest.raises(ReadOnlyError):
             e.matrix = (5, 6, 7, 8)
-        np.testing.assert_allclose(e._matrix, (1, 2, 3, 4))
+        np.testing.assert_allclose(e._matrix, (1, 2, 3, 4))  # type: ignore
 
     def test_configuration_no_data(self) -> None:
         """
@@ -105,13 +105,13 @@ class TestMatrixDataElement (object):
         inst = MatrixDataElement((1, 2, 3, 4), readonly=False)
         for i in configuration_test_helper(inst):
             assert i.matrix is not None
-            np.testing.assert_allclose(i.matrix, (1, 2, 3, 4))
+            np.testing.assert_allclose(i.matrix, (1, 2, 3, 4))  # type: ignore
             assert i.is_read_only() is False
 
         inst = MatrixDataElement((1, 2, 3, 4), readonly=True)
         for i in configuration_test_helper(inst):
             assert i.matrix is not None
-            np.testing.assert_allclose(i.matrix, (1, 2, 3, 4))
+            np.testing.assert_allclose(i.matrix, (1, 2, 3, 4))  # type: ignore
             assert i.is_read_only() is True
 
     def test_is_empty_None(self) -> None:
