@@ -1,6 +1,7 @@
 import unittest.mock as mock
 import os
-from typing import Tuple
+from importlib.util import find_spec
+from typing import Any, Tuple
 import unittest
 
 import pytest
@@ -8,12 +9,17 @@ import requests
 
 from smqtk_core.configuration import configuration_test_helper
 from smqtk_dataprovider.exceptions import InvalidUriError, ReadOnlyError
-from smqtk_dataprovider.impls.data_element.girder import (
-    GirderDataElement,
-    girder_client  # not None when GirderDataElement is usable.
-)
+from smqtk_dataprovider.impls.data_element.girder import GirderDataElement
 
 from tests import TEST_DATA_DIR
+
+
+# Skip a missing optional package, but let a broken installation fail collection.
+girder_client: Any
+if find_spec("girder_client") is None:
+    girder_client = None
+else:
+    import girder_client  # type: ignore
 
 
 DATA_KITWARE_URL = 'https://data.kitware.com'
@@ -36,9 +42,8 @@ def gen_response(content: mock.MagicMock, status_code: int = 200) -> requests.Re
     return resp
 
 
-# Only perform these tests if the implementation is usable.
-@pytest.mark.skipif(not GirderDataElement.is_usable(),
-                    reason="GirderDataElement reports as not usable.")
+@pytest.mark.skipif(girder_client is None,
+                    reason="The optional girder-client package is not installed.")
 class TestGirderDataElement (unittest.TestCase):
     """
     Tests for the GirderDataElement plugin implementation
