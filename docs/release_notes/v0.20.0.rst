@@ -1,6 +1,10 @@
 v0.20.0
 =======
 
+This release adds official Python 3.14 support and testing and allows NumPy 2
+on Python 3.10–3.12. It also updates dependencies for security and compatibility
+and improves Girder testing and CI reliability.
+
 Updates / New Features
 ----------------------
 
